@@ -8,7 +8,20 @@
 </head>
 <body>
 
-    <p>Made it to the homepage</p>
+    <!-- can hide which links are shown based on if the user is logged in -->
+    <!-- Use the hamburger icon for checklist dropdown -->
+    <nav>
+        <li><a href="/">Home</a> <link rel="stylesheet" href=""></li>
+        <li><a href="/logout">Logout</a> <link rel="stylesheet" href=""></li>
+        <li><a href="/search">New Search</a> <link rel="stylesheet" href=""></li>
+    </nav>
+
+
+    {% block content %}
+
+
+    {% endblock %}
+
     
     <script src="static/script.js"></script>
 

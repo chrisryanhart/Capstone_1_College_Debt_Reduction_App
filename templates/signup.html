@@ -1,0 +1,33 @@
+{% extends 'base.html'%}
+
+{% block content %}
+
+
+
+<p>Sign up a new User</p>
+
+<form action="" method="post">
+    {{form.hidden_tag()}}
+
+    {% for field in form if field.widget.type != 'hidden' %}
+        <p>
+            {{field.label}}
+            {{field}}
+
+            {% for error in field.errors %}
+                {{error}}
+            {% endfor %}
+        </p>
+    {% endfor %}
+    <div>
+        <button>Create User</button>
+    </div>
+    <!-- <label for="username">Username:</label>
+    <input name="username" placeholder="Enter username" type="text">
+    <label for="password">Password:</label>
+    <input name="password" type="password" placeholder="Enter password"> -->
+</form>
+
+
+
+{% endblock %}
