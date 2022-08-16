@@ -32,7 +32,7 @@ class Search(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     school_id = db.Column(db.Integer, db.ForeignKey("schools.id"))
-    major_id = db.Column(db.Integer, db.ForeignKey("majors.id"))
+    major_id = db.Column(db.String, db.ForeignKey("majors.id"))
     degree_level_id = db.Column(db.Integer, db.ForeignKey("degrees.id"))
     residency_state_id = db.Column(db.Integer, db.ForeignKey("states.id"))
     household_income = db.Column(db.Integer)
@@ -53,7 +53,7 @@ class School(db.Model):
 class Major(db.Model):
     __tablename__ = "majors"
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.String, primary_key=True)
     major = db.Column(db.String, unique=True, nullable=False)
 
 

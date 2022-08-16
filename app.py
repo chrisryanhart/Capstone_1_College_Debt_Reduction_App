@@ -146,7 +146,11 @@ def search_schools_majors():
         # have to loop through the number of form fields and add school ids to the list
 
         state = request.form['state']
+        data['state'] = state
+
         school1_name = request.form['school1']
+        data['school'] = school1_name
+
 
         school1 = School.query.filter_by(school=school1_name).first()
         school1.id
@@ -183,9 +187,7 @@ def search_schools_majors():
             
             total_out_of_state_cost = out_of_state_tuition + roomboard + books + misc_expense
 
-            data = {
-                'tuition': total_out_of_state_cost
-            }
+            data['tuition'] = total_out_of_state_cost
 
 
 
@@ -193,55 +195,52 @@ def search_schools_majors():
 
         # Make dynamic based on household income level form input
         household_income = '0-30000'
+        data['household_income'] = household_income
         
         # Verify school is private (not public)
         if ownership != 1:
             private_net_cost = cost_data['results'][0][f'latest.cost.net_price.private.by_income_level.{household_income}']
-            data = {'tuition': private_net_cost}
+            data['tuition'] = private_net_cost
 
         if state == school_state and ownership == 1:
             net_in_state_public_cost = cost_data['results'][0][f'latest.cost.net_price.public.by_income_level.{household_income}']
-            data = {'tuition': net_in_state_public_cost}
-
-
+            data['tuition'] = net_in_state_public_cost
 
         # may to have to revise given that there could be multiple requests per search
 
-        major = request.form['major1']
-        school = request.form['school1']
+        major_name = request.form['major1']
+        data['major'] = major_name
 
-        # params = {'major':major, 'school':school}
+        major = Major.query.filter_by(major=major_name).first()
 
+        # make degree dynamic with user input
+        degree = 3
+        degree_name = 'Bachelors'
+        data['degree'] = degree_name
 
-        # earnings data
-        # can filter based on code
-        earnings_resp = requests.get(f'https://api.data.gov/ed/collegescorecard/v1/schools.json?id=157085&latest.programs.cip_4_digit.code=1419&_fields=latest.programs.cip_4_digit,id,school.name&api_key={API_key}')
+        major_params = {
+            'id':f'{school1.id}','latest.programs.cip_4_digit.credential.level':f"{degree}", 'latest.programs.cip_4_digit.code':major.id, 
+            '_fields':'id,school.name,latest.programs.cip_4_digit.earnings.highest.1_yr.overall_median_earnings,latest.programs.cip_4_digit.earnings.highest.2_yr.overall_median_earnings,latest.programs.cip_4_digit.earnings.highest.3_yr.overall_median_earnings',
+            "api_key": f"{API_key}"
+            }
+        # payload = {"id": f"{school_ids[0]}", "_fields": "id,school.name,latest.cost,latest.school.ownership,latest.school.state", "api_key": f"{API_key}"}
+
+        earnings_resp = requests.get(f'https://api.data.gov/ed/collegescorecard/v1/schools.json', major_params)
+
+        # earnings_resp = requests.get(f'https://api.data.gov/ed/collegescorecard/v1/schools.json?id=157085&latest.programs.cip_4_digit.code=1419&_fields=latest.programs.cip_4_digit,id,school.name&api_key={API_key}')
 
         earnings_data = earnings_resp.json()
-        earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['1_yr']['overall_median_earnings']
 
-        # data['results'] is list 
-        # need to loop through list on html form
-        # submit data to the database?
-        # data['results'][0]['school.name']
-        # test[0]['latest']['programs']['cip_4_digit']
-        # have to return the complete "latest.programs.cip_4_digit"
+        yr_1_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['1_yr']['overall_median_earnings']
+        yr_2_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['2_yr']['overall_median_earnings']
+        yr_3_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['3_yr']['overall_median_earnings']
+
+        data['yr_1_earnings'] = yr_1_earnings
+        data['yr_2_earnings'] = yr_2_earnings
+        data['yr_3_earnings'] = yr_3_earnings
         
-        # API can return the query reqest below:
-        # test[0]['latest']['programs']['cip_4_digit'][0]['title']
 
-        # API CANNOT return this query test below:
-        # test[0]['latest']['programs']['cip_4_digit'][0]['school']= 'University of Kentucky'
-
-        # test = data['results']
-
-        # formatted_data = {
-        #     'school' = school,
-        #     'major' = major,
-        #     'cost' = ,
-
-        # }
-        # session['data'] = formatted_data
+        session['data'] = data
 
         return redirect('/search/results')
 
@@ -250,11 +249,16 @@ def search_schools_majors():
 @app.route('/search/results')
 def show_search_results():
 
+    data = session['data']
 
-    return render_template('search_results.html')
+    # if user likes the data, store the search results
+    # stay on same page 
 
 
-@app.route('/user/searches')
+    return render_template('results.html',data=data)
+
+
+@app.route('/user/profile')
 def show_user_searches():
 
     # retreive stored searches from db

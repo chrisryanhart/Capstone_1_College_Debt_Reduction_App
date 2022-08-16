@@ -13,10 +13,18 @@ Degree.query.delete()
 State.query.delete()
 UserSearch.query.delete()
 
-degrees = ['Bachelors Degree', "Master's Degree", "Doctoral Degree"]
-for title in degrees:
-    degree = Degree(degree=title)
-    db.session.add(degree)
+# degrees = ['Bachelors Degree', "Master's Degree", "Doctoral Degree"]
+# for title in degrees:
+#     degree = Degree(degree=title)
+#     db.session.add(degree)
+
+degree3 = Degree(id=3,degree='Bachelors Degree')
+degree5 = Degree(id=5,degree="Master's Degree")
+degree6 = Degree(id=6,degree="Doctoral Degree")
+
+db.session.add(degree3)
+db.session.add(degree5)
+db.session.add(degree6)
 
 db.session.commit()
 
@@ -30,16 +38,24 @@ states = [ 'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA',
 for state in states:
     state_inst = State(state=state)
     db.session.add(state_inst)
+    
 
 db.session.commit()
 
 
-majors = ['Mechanical Engineering','Materials Engineering','Chemical Engineering']
+# majors = ['Mechanical Engineering','Materials Engineering','Chemical Engineering']
 
-for title in majors:
-    major = Major(major=title)
-    db.session.add(major)
+# for title in majors:
+#     major = Major(major=title)
+#     db.session.add(major)
 
+major1 = Major(id="1408",major="Civil Engineering")
+major2 = Major(id="0901",major="Communication and Media Studies")
+major3 = Major(id="5203",major="Accounting and Related Services")
+
+db.session.add(major1)
+db.session.add(major2)
+db.session.add(major3)
 db.session.commit()
 
 
