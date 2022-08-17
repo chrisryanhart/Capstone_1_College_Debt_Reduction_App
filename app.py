@@ -264,3 +264,22 @@ def show_user_searches():
     # retreive stored searches from db
 
     return render_template()
+
+
+@app.route('/API/saveSearch',methods=['POST'])
+def save_search_result():
+
+    data = json.loads(request.data)
+
+
+    # extract form data
+
+    # if checkbox checked, save data
+
+    # if checkbox unchecked, delete instance
+
+    # Create model instance
+    # commit to database
+
+
+    return 'Save successful'

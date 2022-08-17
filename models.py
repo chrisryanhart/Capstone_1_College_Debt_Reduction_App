@@ -27,11 +27,12 @@ class User(db.Model):
     def __repr__(self):
         return f'Username: {self.username}'
 
-class Search(db.Model):
-    __tablename__ = "searches"
+class SavedQueries(db.Model):
+    __tablename__ = "saved_queries"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    school_id = db.Column(db.Integer, db.ForeignKey("schools.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    school_cost_id = db.Column(db.Integer, db.ForeignKey("school_costs.id"))
     major_id = db.Column(db.String, db.ForeignKey("majors.id"))
     degree_level_id = db.Column(db.Integer, db.ForeignKey("degrees.id"))
     residency_state_id = db.Column(db.Integer, db.ForeignKey("states.id"))
@@ -41,8 +42,8 @@ class Search(db.Model):
     earnings = db.Column(db.Integer)
 
 # populated by get request to API; updates each new session
-class School(db.Model):
-    __tablename__ = "schools"
+class SchoolCost(db.Model):
+    __tablename__ = "school_costs"
 
     id = db.Column(db.Integer, primary_key=True)
     school = db.Column(db.String, unique=True, nullable=False)

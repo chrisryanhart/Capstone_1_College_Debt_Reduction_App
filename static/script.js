@@ -1,20 +1,36 @@
-// $saved = $('#saved');
-
-
+$searchSaveStatus = $('#save_search');
 
 // allow user to sort search results
-function saveSearch(e){
-    e.preventDefault();
+async function saveSearch(e){
+    // e.preventDefault();
+    // e.stopPropogation();
+    const isChecked = [];
+
+    if ($searchSaveStatus.is(':checked')){
+        isChecked.append(true);
+    }
+    else{
+        isChecked.append(false)
+    }
+
+    // make AJAX call to API (/saveSearch)
+
+    // get data from input fields
+    
+
+    let resp = await axios({
+        method: 'post',
+        url: 'http://localhost:5000/API/saveSearch',
+        data: {
+          name: 'test',
+          check_status: isChecked
+        }
+      });
 
     console.log('Entered Save search')
-    // collect data from results page
-    // send GET request to route on the API
-    // 
 
 
 }
-
-// user searches: allow to filter major/school once they start typing
 
 
 $('#save_search').on("click", saveSearch)
