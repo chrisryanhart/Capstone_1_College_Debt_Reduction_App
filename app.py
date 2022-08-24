@@ -11,7 +11,7 @@ import requests
 import json
 import os
 
-from models import db, connect_db, User, Search, School, Major, Degree, State, UserSearch
+from models import db, connect_db, User, School, Major, State
 from forms import SearchForm, AddUserForm, LoginForm
 from secret import API_key
 
@@ -145,6 +145,8 @@ def search_schools_majors():
 
         # have to loop through the number of form fields and add school ids to the list
 
+        household_income = request.form['household_income']
+
         state = request.form['state']
         data['state'] = state
 
@@ -152,7 +154,7 @@ def search_schools_majors():
         data['school'] = school1_name
 
 
-        school1 = School.query.filter_by(school=school1_name).first()
+        school1 = School.query.filter_by(name=school1_name).first()
         school1.id
 
         # school2 = request.form['school2']
@@ -194,7 +196,7 @@ def search_schools_majors():
         # include option to not accept student aid (in-state total cost without aid)
 
         # Make dynamic based on household income level form input
-        household_income = '0-30000'
+        # household_income = '0-30000'
         data['household_income'] = household_income
         
         # Verify school is private (not public)
@@ -211,7 +213,7 @@ def search_schools_majors():
         major_name = request.form['major1']
         data['major'] = major_name
 
-        major = Major.query.filter_by(major=major_name).first()
+        major = Major.query.filter_by(title=major_name).first()
 
         # make degree dynamic with user input
         degree = 3
@@ -231,6 +233,7 @@ def search_schools_majors():
 
         earnings_data = earnings_resp.json()
 
+        # if results don't exist, exit function and flash message
         yr_1_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['1_yr']['overall_median_earnings']
         yr_2_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['2_yr']['overall_median_earnings']
         yr_3_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['3_yr']['overall_median_earnings']
@@ -244,7 +247,20 @@ def search_schools_majors():
 
         return redirect('/search/results')
 
-    return render_template('/search.html',form=form)
+    
+    # query database for majors and schools
+
+    schools = School.query.order_by(School.name).all()
+
+    majors = Major.query.order_by(Major.title).all()
+
+    states = State.query.all()
+
+    # majors = [(major.id,major.title) for major in Major.query.all()]
+
+    # form.major1.choices = majors
+
+    return render_template('/search.html',form=form,schools=schools,majors=majors, states=states)
 
 @app.route('/search/results')
 def show_search_results():

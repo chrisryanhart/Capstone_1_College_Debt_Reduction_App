@@ -1,5 +1,7 @@
 # from flask import Flask 
 from enum import unique
+from tokenize import ContStr
+from unicodedata import name
 from wsgiref.validate import validator
 import bcrypt
 from flask_bcrypt import Bcrypt
@@ -22,61 +24,119 @@ class User(db.Model):
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(20), unique=True, nullable=False)
 
-    searches = db.relationship('Search', secondary= 'users_searches', backref='users')
+    user_program_values = db.relationship('UserProgramValue', backref='user')
+
+    # searches = db.relationship('Search', secondary= 'users_searches', backref='users')
 
     def __repr__(self):
         return f'Username: {self.username}'
 
-class SavedQueries(db.Model):
-    __tablename__ = "saved_queries"
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    school_cost_id = db.Column(db.Integer, db.ForeignKey("school_costs.id"))
-    major_id = db.Column(db.String, db.ForeignKey("majors.id"))
-    degree_level_id = db.Column(db.Integer, db.ForeignKey("degrees.id"))
-    residency_state_id = db.Column(db.Integer, db.ForeignKey("states.id"))
-    household_income = db.Column(db.Integer)
-    cash = db.Column(db.Integer)
-    annual_cost = db.Column(db.Integer)
-    earnings = db.Column(db.Integer)
-
-# populated by get request to API; updates each new session
-class SchoolCost(db.Model):
-    __tablename__ = "school_costs"
-
-    id = db.Column(db.Integer, primary_key=True)
-    school = db.Column(db.String, unique=True, nullable=False)
-
-# populated by get request to API; updates each new session
-# enhanced performance if I update these as maintenance on set intervals?
-
 class Major(db.Model):
     __tablename__ = "majors"
 
-    id = db.Column(db.String, primary_key=True)
-    major = db.Column(db.String, unique=True, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
 
-
-class Degree(db.Model):
-    __tablename__ = "degrees"
+# change to enumerable data type
+class HouseholdIncome(db.Model):
+    __tablename__ = "household_incomes"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    degree = db.Column(db.String, unique=True, nullable=False)
+    household_income = db.Column(db.String, nullable=False)
+
+class School(db.Model):
+    __tablename__= "schools"
+
+    id = db.Column(db.String, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+
+# change to enumerable data type
+class Credential(db.Model):
+    __tablename__ = "credentials"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String, unique=True, nullable=False)
 
 
 class State(db.Model):
     __tablename__ = "states"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    state = db.Column(db.String(2), unique=True, nullable=False)
+    name = db.Column(db.String(2), unique=True, nullable=False)
 
-class UserSearch(db.Model):
-    __tablename__ = "users_searches"
+class TuitionType(db.Model):
+    __tablename__ = "tuition_types"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer,db.ForeignKey("users.id"))
-    search_id = db.Column(db.Integer, db.ForeignKey("searches.id"))
+    type = db.Column(db.String, nullable = False)
+
+class ProgramValue(db.Model):
+    __tablename__ = "program_values"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    school_id = db.Column(db.String, db.ForeignKey("schools.id"), nullable=False)
+    major_id = db.Column(db.Integer, db.ForeignKey("majors.id"), nullable=False)
+    state_residency_id = db.Column(db.Integer, db.ForeignKey("states.id"), nullable=False)
+    credential_id = db.Column(db.Integer, db.ForeignKey("credentials.id"), nullable=False)
+    tuition_type_id = db.Column(db.Integer, db.ForeignKey("tuition_types.id"), nullable=False)
+    cost = db.Column(db.Integer, nullable=True)
+    household_income_id = db.Column(db.Integer, db.ForeignKey("household_incomes.id"), nullable=False)
+    expected_earnings = db.Column(db.Integer, nullable=True)
+
+    user_program_values = db.relationship('UserProgramValue', backref='program_values')
+    users = db.relationship('User',secondary="users_program_values", backref='program_values')
+
+class UserProgramValue(db.Model):
+    __tablename__ = "users_program_values"
+
+    # id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    program_value_id = db.Column(db.Integer,db.ForeignKey("users.id"),primary_key=True)
+    user_id = db.Column(db.Integer,db.ForeignKey("program_values.id"),primary_key=True)
+
+
+
+# populated by get request to API; updates each new session
+# class SchoolCost(db.Model):
+#     __tablename__ = "school_costs"
+
+#     id = db.Column(db.Integer, primary_key=True)
+#     school_id = db.Column(db.String, db.ForeignKey("schools.id"))
+#     in_state_cost = db.Column(db.Integer)
+#     out_of_state_cost = db.Column(db.Integer)
+#     household_income_id = db.Column(db.Integer, db.ForeignKey("household_incomes.id"))
+
+# class QuerySave(db.Model):
+#     __tablename__ = "saved_queries"
+
+#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+#     school_cost_id = db.Column(db.Integer, db.ForeignKey("school_costs.id"))
+#     program_id = db.Column(db.Integer)
+#     residency_state_id = db.Column(db.Integer, db.ForeignKey("states.id"))
+#     annual_cash_payment = db.Column(db.Integer)
+    # major_id = db.Column(db.String, db.ForeignKey("majors.id"))
+    # degree_level_id = db.Column(db.Integer, db.ForeignKey("degrees.id"))
+    # household_income = db.Column(db.Integer)
+    # annual_cost = db.Column(db.Integer)
+    # earnings = db.Column(db.Integer)
+
+
+# class Program(db.Model):
+#     __tablename__ = "programs"
+
+#     id = db.Column(db.Integer,primary_key=True,autoincrement=True)
+#     major_id = db.Column(db.Integer,db.ForeignKey("majors.id"))
+#     credential_id = db.Column(db.Integer, db.ForeignKey("credentials.id"))
+#     expected_earnings = db.Column(db.Integer)
+
+
+
+# class UserSearch(db.Model):
+#     __tablename__ = "users_searches"
+
+#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#     user_id = db.Column(db.Integer,db.ForeignKey("users.id"))
+#     search_id = db.Column(db.Integer, db.ForeignKey("searches.id"))
 
 
 

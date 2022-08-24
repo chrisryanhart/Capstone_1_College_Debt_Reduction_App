@@ -8,15 +8,77 @@
     {{form.hidden_tag()}}
 
     {% for field in form if field.widget.type != 'hidden' %}
-        <p>
+        {% if field.label.text == "Major:" %}
+            
             {{field.label}}
-            {{field}}
+            {{field(list=field.name + "-list")}}
 
+            <datalist id="{{field.name}}-list">
+                {% for major in majors %}
+                    <option value="{{major.title}}">
+                {% endfor %}
+            </datalist>
+            <p>
+                {% for error in field.errors %}
+                    {{error}}
+                {% endfor %}
+            </p>
+
+        {% elif field.label.text == "College:" %}
+
+            {{field.label}}
+            {{field(list=field.name + "-list")}}
+
+            <datalist id="{{field.name}}-list">
+                {% for school in schools %}
+                    <option value="{{school.name}}">
+                {% endfor %}
+            </datalist>
+            <p>
             {% for error in field.errors %}
                 {{error}}
             {% endfor %}
-        </p>
+        
+        {% elif field.label.text == 'State of Residency:' %}
+                
+            {{field.label}}
+            {{field(list=field.name + "-list")}}
+
+            <datalist id="{{field.name}}-list">
+                {% for state in states %}
+                    <option value="{{state.name}}">
+                {% endfor %}
+            </datalist>
+            <p>
+            {% for error in field.errors %}
+                {{error}}
+            {% endfor %}
+        {% else %}
+            <p>
+
+                {{field.label}}
+
+                {{field}}
+
+
+                {% for error in field.errors %}
+                    {{error}}
+                {% endfor %}
+            </p>
+        {% endif %}
+        
     {% endfor %}
+  
+
+
+    <!-- <label for="band">Favorite Band: </label>
+    <input type="text" id="band"> -->
+
+    <!-- <label for="ice-cream-choice">Choose a flavor:</label>
+    <input list="ice-cream-flavors" id="ice-cream-choice" name="ice-cream-choice" /> -->
+    
+
+
     <div>
         <button>Search</button>
     </div>
