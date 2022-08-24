@@ -4,7 +4,7 @@
 
 <p>Ready to start a new search</p>
 
-<form action="/search" method="post">
+<form action="/search/results" method="post">
     {{form.hidden_tag()}}
 
     {% for field in form if field.widget.type != 'hidden' %}
@@ -66,7 +66,7 @@
                 {% endfor %}
             </p>
         {% endif %}
-        
+
     {% endfor %}
   
 

@@ -124,12 +124,33 @@ def login_user():
     return render_template('login.html', form=form)
 
 
-@app.route('/search', methods=['GET','POST'])
+@app.route('/search', methods=['GET'])
 def search_schools_majors():
     # All school and major combos will have to be preloaded
 
     # show form with multi-add majors and schools
     # when they type, the majors update; school choices will be refined
+
+    form = SearchForm()
+
+        # return redirect('/search/results')
+    
+    # query database for majors and schools
+
+    schools = School.query.order_by(School.name).all()
+
+    majors = Major.query.order_by(Major.title).all()
+
+    states = State.query.all()
+
+    # majors = [(major.id,major.title) for major in Major.query.all()]
+
+    # form.major1.choices = majors
+
+    return render_template('/search.html',form=form,schools=schools,majors=majors, states=states)
+
+@app.route('/search/results', methods=['POST'])
+def show_search_results():
 
     form = SearchForm()
 
@@ -243,29 +264,10 @@ def search_schools_majors():
         data['yr_3_earnings'] = yr_3_earnings
         
 
-        session['data'] = data
+    #     session['data'] = data
 
-        return redirect('/search/results')
 
-    
-    # query database for majors and schools
-
-    schools = School.query.order_by(School.name).all()
-
-    majors = Major.query.order_by(Major.title).all()
-
-    states = State.query.all()
-
-    # majors = [(major.id,major.title) for major in Major.query.all()]
-
-    # form.major1.choices = majors
-
-    return render_template('/search.html',form=form,schools=schools,majors=majors, states=states)
-
-@app.route('/search/results')
-def show_search_results():
-
-    data = session['data']
+    # data = session['data']
 
     # if user likes the data, store the search results
     # stay on same page 
