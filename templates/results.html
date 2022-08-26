@@ -9,6 +9,9 @@
             <th>College:</th>
             <th>Major:</th>
             <th>Degree Type:</th>
+            <th style="display: none;">Household Income:</th>
+            <th style="display: none;">Home State:</th>
+            <th>Tuition Type:</th>
             <th>Annual Cost:</th>
             <th>Year 1 Earnings Post-Graduation:</th>
             <th>Year 2 Earnings Post-Graduation:</th>
@@ -19,6 +22,9 @@
             <td><input id="school" type="text" value="{{data.school}}"></td>
             <td><input id="major" type="text" value="{{data.major}}"></td>
             <td><input id="degree" type="text" value="{{data.degree}}"></td>
+            <td style="display: none;"><input id='HH-income' type="text" value="{{data.household_income}}"></td>
+            <td style="display: none;"><input id="home-state" type="text" value="{{data.state}}"></td>
+            <td><input id="tuition-type" type="text" value="{{data.tuition_type}}"></td>
             <td>$<input id="tuition" type="number" value="{{data.tuition}}"></td>
             <td>$<input id="yr_1_salary" type="number" value="{{data.yr_1_earnings}}"></td>
             <td>$<input id="yr_2_salary" type="number" value="{{data.yr_2_earnings}}"></td>

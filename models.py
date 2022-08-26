@@ -24,7 +24,7 @@ class User(db.Model):
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(20), unique=True, nullable=False)
 
-    user_program_values = db.relationship('UserProgramValue', backref='user')
+    user_saved_queries = db.relationship('UserQuerySave', backref='user')
 
     # searches = db.relationship('Search', secondary= 'users_searches', backref='users')
 
@@ -34,7 +34,7 @@ class User(db.Model):
 class Major(db.Model):
     __tablename__ = "majors"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True)
     title = db.Column(db.String, nullable=False)
 
 # change to enumerable data type
@@ -49,6 +49,18 @@ class School(db.Model):
 
     id = db.Column(db.String, primary_key=True)
     name = db.Column(db.String, nullable=False)
+
+class SchoolMajor(db.Model):
+    __tablename__= "schools_majors"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    school_id = db.Column(db.String,db.ForeignKey("schools.id")) 
+    major_id = db.Column(db.String,db.ForeignKey("majors.id")) 
+
+    schools = db.relationship('School',backref="schools_majors")
+    majors = db.relationship('Major',backref="schools_majors")
+
+    # states = db.relationship('State', backref='saved_queries')
 
 # change to enumerable data type
 class Credential(db.Model):
@@ -70,28 +82,30 @@ class TuitionType(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     type = db.Column(db.String, nullable = False)
 
-class ProgramValue(db.Model):
-    __tablename__ = "program_values"
+class QuerySave(db.Model):
+    __tablename__ = "saved_queries"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     school_id = db.Column(db.String, db.ForeignKey("schools.id"), nullable=False)
-    major_id = db.Column(db.Integer, db.ForeignKey("majors.id"), nullable=False)
+    major_id = db.Column(db.String, db.ForeignKey("majors.id"), nullable=False)
     state_residency_id = db.Column(db.Integer, db.ForeignKey("states.id"), nullable=False)
     credential_id = db.Column(db.Integer, db.ForeignKey("credentials.id"), nullable=False)
-    tuition_type_id = db.Column(db.Integer, db.ForeignKey("tuition_types.id"), nullable=False)
-    cost = db.Column(db.Integer, nullable=True)
     household_income_id = db.Column(db.Integer, db.ForeignKey("household_incomes.id"), nullable=False)
-    expected_earnings = db.Column(db.Integer, nullable=True)
 
-    user_program_values = db.relationship('UserProgramValue', backref='program_values')
-    users = db.relationship('User',secondary="users_program_values", backref='program_values')
+    user_saved_queries = db.relationship('UserQuerySave', backref='saved_queries')
+    users = db.relationship('User',secondary="users_saved_queries", backref='saved_queries')
+    schools = db.relationship('School', backref='saved_queries')
+    majors = db.relationship('Major', backref='saved_queries')
+    states = db.relationship('State', backref='saved_queries')
+    credentials = db.relationship('Credential', backref='saved_queries')
+    household_incomes = db.relationship('HouseholdIncome', backref='saved_queries')
 
-class UserProgramValue(db.Model):
-    __tablename__ = "users_program_values"
+class UserQuerySave(db.Model):
+    __tablename__ = "users_saved_queries"
 
     # id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    program_value_id = db.Column(db.Integer,db.ForeignKey("users.id"),primary_key=True)
-    user_id = db.Column(db.Integer,db.ForeignKey("program_values.id"),primary_key=True)
+    query_id = db.Column(db.Integer,db.ForeignKey("saved_queries.id"),primary_key=True)
+    user_id = db.Column(db.Integer,db.ForeignKey("users.id"),primary_key=True)
 
 
 

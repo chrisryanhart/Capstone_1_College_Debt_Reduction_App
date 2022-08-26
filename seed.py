@@ -1,7 +1,7 @@
 from hashlib import new
 from unicodedata import name
 from all_majors_seed import majors, school_majors
-from models import Credential, db, School, Major, State, User, State, HouseholdIncome
+from models import Credential, SchoolMajor, db, School, Major, State, User, State, HouseholdIncome, SchoolMajor
 from app import app
 
 from all_majors_seed import majors, school_majors
@@ -47,35 +47,6 @@ for state in states:
 
 db.session.commit()
 
-
-# majors = ['Mechanical Engineering','Materials Engineering','Chemical Engineering']
-
-# for title in majors:
-#     major = Major(major=title)
-#     db.session.add(major)
-
-# for major in majors:
-#     new_major = Major(id=major['code'], major=major['title'])
-#     db.session.add(new_major)
-
-# db.session.commit()
-
-# major1 = Major(id="1408",major="Civil Engineering")
-# major2 = Major(id="0901",major="Communication and Media Studies")
-# major3 = Major(id="5203",major="Accounting and Related Services")
-
-# db.session.add(major1)
-# db.session.add(major2)
-# db.session.add(major3)
-# db.session.commit()
-
-
-for school in school_majors:
-    new_school = School(id=school['id'], name=school['school.name'])
-    db.session.add(new_school)
-    db.session.commit()
-
-
 for major in majors:
     try:
         new_major = Major(id=major['code'], title=major['title'])
@@ -84,22 +55,35 @@ for major in majors:
     except:
         print('school was a duplicate')
 
+for school in school_majors:
+    new_school = School(id=str(school['id']), name=school['school.name'])
+    db.session.add(new_school)
+    db.session.commit()
 
-# school1 = School(id=157085, school="University of Kentucky")
-# school2 = School(id=157818, school="Transylvania University")
-# school3 = School(id=157289, school="University of Louisville")
-# school4 = School(id=139755, school="Georgia Institute of Technology-Main Campus")
+    for major in school['latest.programs.cip_4_digit']:
+        new_school_major = SchoolMajor(school_id=school['id'],major_id=major['code'])
+        # major['code']
+        # major['title']
+        db.session.add(new_school_major)
+        db.session.commit()
 
-# db.session.add(school1)
-# db.session.add(school2)
-# db.session.add(school3)
-# db.session.add(school4)
+# class SchoolMajor(db.Model):
+#     __tablename__= "schools_majors"
 
-# db.session.commit()
+#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#     school_id = db.Column(db.String,db.ForeignKey("schools.id")) 
+#     major_id = db.Column(db.String,db.ForeignKey("majors.id")) 
 
-# degrees
-# schools - should schools have their own school ID? 
-
-# majors
+# school_majors[0]['school.name'] 
 
 
+
+
+
+
+incomes = ["0-30000","30001-48000","48001-75000","75001-110000","110001-plus"]
+
+for range in incomes:
+    new_income = HouseholdIncome(household_income=range)
+    db.session.add(new_income)
+db.session.commit()

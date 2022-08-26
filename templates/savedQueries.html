@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- single search results -->
+<div id="saved-queries">
+    <table>
+        <tr>
+            <th>College:</th>
+            <th>Major:</th>
+            <th>Degree Type:</th>
+            <th style="display: none;">Household Income:</th>
+            <th style="display: none;">Home State:</th>
+            <th>Tuition Type:</th>
+            <th>Annual Cost:</th>
+            <th>Year 1 Earnings Post-Graduation:</th>
+            <th>Year 2 Earnings Post-Graduation:</th>
+            <th>Year 3 Earnings Post-Graduation:</th>
+            <th>Search Saved</th>
+        </tr>
+
+        <!-- loop through results from database -->
+
+        {% for query in data %}
+            <tr>
+                <td><input id="school" type="text" value="{{query.school_name}}"></td>
+                <td><input id="major" type="text" value="{{query.major_name}}"></td>
+                <td><input id="degree" type="text" value="{{query.credential_title}}"></td>
+                <!-- <td style="display: none;"><input id='HH-income' type="text" value="{{data.household_income}}"></td>
+                <td style="display: none;"><input id="home-state" type="text" value="{{data.state}}"></td> -->
+                <td><input id="tuition-type" type="text" value="{{query.tuition_type}}"></td>
+                <td>$<input id="tuition" type="number" value="{{query.tuition}}"></td>
+                <td>$<input id="yr_1_salary" type="number" value="{{query.yr_1_earnings}}"></td>
+                <td>$<input id="yr_2_salary" type="number" value="{{query.yr_2_earnings}}"></td>
+                <td>$<input id="yr_3_salary" type="number" value="{{query.yr_3_earnings}}"></td>
+                <td><label for="saved"><input checked type="checkbox" id="save_search" name="saved"></label></td>            
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}

@@ -2,3 +2,4 @@
 /__pycache__
 secret.py
 .vscode
+.DS_Store
