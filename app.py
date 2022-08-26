@@ -50,15 +50,17 @@ def show_home_page():
 
     if 'user_id' in session:
 
-        user = User.query.get(session['user_id'])
+        saved_queries = []
+
+        user = User.query.filter_by(id=session['user_id']).first()
+
+        saved_queries = user.saved_queries
+
+        data = retrieve_saved_queries(saved_queries)
+
+        return render_template('savedQueries.html', user=user, data=data)
 
 
-        return render_template('userProfile.html', user=user)
-    # homepage/dashboard should show if logged in 
-    # dashboard should include past searches and provide option for new search
-
-
-    # else invite user to sign up or login
 
     return render_template('welcome.html')
 
@@ -130,6 +132,9 @@ def search_schools_majors():
 
     # show form with multi-add majors and schools
     # when they type, the majors update; school choices will be refined
+    if 'user_id' not in session:
+        # flash message
+        return redirect('/')
 
     form = SearchForm()
 
@@ -151,6 +156,9 @@ def search_schools_majors():
 
 @app.route('/search/results', methods=['POST'])
 def show_search_results():
+    if 'user_id' not in session:
+        # flash message
+        return redirect('/')
 
     form = SearchForm()
 
@@ -280,6 +288,10 @@ def show_search_results():
 
 @app.route('/savedQueries', methods=['GET'])
 def show_saved_queries():
+    if 'user_id' not in session:
+        # flash message
+        return redirect('/')
+
     saved_queries = QuerySave.query.all()
     # retreive stored searches from db from the logged in user
 
@@ -287,6 +299,34 @@ def show_saved_queries():
     # multiple API calls or combine?  
     # function will have to take multiple parameters if combining into one query
     # does combining the query depend on if the major is the same?
+    # data = []
+
+    data = retrieve_saved_queries(saved_queries)
+
+    # data = [query_data]
+
+    # for query in saved_queries:
+    #     # as I loop through, I can retrieve the names to add the results screen
+    #     school_id = query.school_id
+    #     major_id = query.major_id
+    #     credential_id = query.credential_id
+    #     state = query.states.name
+    #     household_income = query.household_incomes.household_income
+
+    #     resp = call_college_API(school_id,major_id,credential_id,state,household_income)
+
+    #     resp['school_name'] = query.schools.name
+    #     resp['major_name'] = query.majors.title
+    #     resp['credential_title'] = query.credentials.title
+        
+    #     data.append(resp)
+
+        # loop through results in the template
+
+    return render_template('savedQueries.html', data=data)
+
+
+def retrieve_saved_queries(saved_queries):
     data = []
 
     for query in saved_queries:
@@ -302,84 +342,102 @@ def show_saved_queries():
         resp['school_name'] = query.schools.name
         resp['major_name'] = query.majors.title
         resp['credential_title'] = query.credentials.title
-
-
         
         data.append(resp)
 
-        # loop through results in the template
-
-    return render_template('savedQueries.html', data=data)
+    return data
 
 
 @app.route('/API/saveSearch',methods=['POST'])
 def save_search_result():
-
+    if 'user_id' not in session:
+        # flash message
+        return redirect('/')
+    
     data = json.loads(request.data)
 
-    if data['check_status']:
-
-        school_name = data['school']
-        major_title = data['major']
-        degree_title = data['degree']
-        household_income_range = data['household_income']
-        home_state_name = data['home_state']
-
-        school_inst = School.query.filter_by(name=school_name).first()
-        school_id = school_inst.id
-
-        major_inst = Major.query.filter_by(title=major_title).first()
-        major_id = major_inst.id
-
-        degree_inst = Credential.query.filter_by(title=degree_title).first()
-        degree_id = degree_inst.id
+    if 'user_id' in session:
+        curr_user = User.query.get(session['user_id'])
 
 
-        household_income_inst = HouseholdIncome.query.filter_by(household_income=household_income_range).first()
-        household_income_id = household_income_inst.id
+        if data['check_status']:
 
-        home_state_inst = State.query.filter_by(name=home_state_name).first()
-        home_state_id = home_state_inst.id
-
-        favorite_search = QuerySave(school_id=school_id, major_id=major_id, state_residency_id=home_state_id, credential_id=degree_id, household_income_id=household_income_id)
-        db.session.add(favorite_search)
-        db.session.commit()
+            # confirm current user
+            # make new entry in the users_queries join table in the database
 
 
-    elif data['check_status'] == False:
-        saved_query = QuerySave.query.first()
 
-        db.session.delete(saved_query)
-        db.session.commit()
+            school_name = data['school']
+            major_title = data['major']
+            degree_title = data['degree']
+            household_income_range = data['household_income']
+            home_state_name = data['home_state']
 
-        # return 'query deleted'
+            school_inst = School.query.filter_by(name=school_name).first()
+            school_id = school_inst.id
 
-        # class QuerySave(db.Model):
-        # __tablename__ = "saved_queries"
+            major_inst = Major.query.filter_by(title=major_title).first()
+            major_id = major_inst.id
 
-        # id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-        # school_id = db.Column(db.String, db.ForeignKey("schools.id"), nullable=False)
-        # major_id = db.Column(db.Integer, db.ForeignKey("majors.id"), nullable=False)
-        # state_residency_id = db.Column(db.Integer, db.ForeignKey("states.id"), nullable=False)
-        # credential_id = db.Column(db.Integer, db.ForeignKey("credentials.id"), nullable=False)
-    # household_income_id = db.Column(db.Integer, db.ForeignKey("household_incomes.id"), nullable=False)
+            degree_inst = Credential.query.filter_by(title=degree_title).first()
+            degree_id = degree_inst.id
 
-    # user_saved_queries = db.relationship('UserQuerySave', backref='saved_queries')
-    # users = db.relationship('User',secondary="users_saved_queries", backref='saved_queries')
-    # extract form data
 
-    # if checkbox checked, save data
+            household_income_inst = HouseholdIncome.query.filter_by(household_income=household_income_range).first()
+            household_income_id = household_income_inst.id
 
-    # if checkbox unchecked, delete instance
+            home_state_inst = State.query.filter_by(name=home_state_name).first()
+            home_state_id = home_state_inst.id
 
-    # Create model instance
-    # commit to database
+            favorite_query = QuerySave(school_id=school_id, major_id=major_id, state_residency_id=home_state_id, credential_id=degree_id, household_income_id=household_income_id)
+            db.session.add(favorite_query)
+            db.session.commit()
+
+            user_saved_query = UserQuerySave(query_id=favorite_query.id,user_id=curr_user.id)
+
+            db.session.add(user_saved_query)
+            db.session.commit()
+
+            test=1
+
+
+        elif data['check_status'] == False:
+            saved_query = QuerySave.query.first()
+
+            db.session.delete(saved_query)
+            db.session.commit()
+
+            # return 'query deleted'
+
+            # class QuerySave(db.Model):
+            # __tablename__ = "saved_queries"
+
+            # id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+            # school_id = db.Column(db.String, db.ForeignKey("schools.id"), nullable=False)
+            # major_id = db.Column(db.Integer, db.ForeignKey("majors.id"), nullable=False)
+            # state_residency_id = db.Column(db.Integer, db.ForeignKey("states.id"), nullable=False)
+            # credential_id = db.Column(db.Integer, db.ForeignKey("credentials.id"), nullable=False)
+        # household_income_id = db.Column(db.Integer, db.ForeignKey("household_incomes.id"), nullable=False)
+
+        # user_saved_queries = db.relationship('UserQuerySave', backref='saved_queries')
+        # users = db.relationship('User',secondary="users_saved_queries", backref='saved_queries')
+        # extract form data
+
+        # if checkbox checked, save data
+
+        # if checkbox unchecked, delete instance
+
+        # Create model instance
+        # commit to database
 
 
     return 'success'
 
 @app.route('/API/findMajors', methods=['GET'])
 def find_majors_of_schools():
+    if 'user_id' not in session:
+        # flash message
+        return redirect('/')
 
     major_list = []
     major_codes = []
@@ -418,6 +476,9 @@ def find_majors_of_schools():
 
 @app.route('/API/findSchools', methods=['GET'])
 def find_schools_of_a_major():
+    if 'user_id' not in session:
+        # flash message
+        return redirect('/')
 
     school_list = []
     school_ids = []
@@ -508,3 +569,5 @@ def call_college_API(school_id,major_id,credential_id,state,household_income):
 
 
         return data
+
+

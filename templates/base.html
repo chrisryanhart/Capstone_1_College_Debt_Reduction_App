@@ -14,10 +14,12 @@
     <!-- can hide which links are shown based on if the user is logged in -->
     <!-- Use the hamburger icon for checklist dropdown -->
     <nav>
+        <!-- home should show user's queries if logged in -->
         <li><a href="/">Home</a> <link rel="stylesheet" href=""></li>
-        <li><a href="/logout">Logout</a> <link rel="stylesheet" href=""></li>
-        <li><a href="/search">New Search</a> <link rel="stylesheet" href=""></li>
-        <li><a href="/savedQueries">Saved Queries</a> <link rel="stylesheet" href=""></li>
+        <!-- <li><a href="/savedQueries">Saved Queries</a> <link rel="stylesheet" href=""></li> -->
+        <!-- <li><a href="/">Edit Profile</a></li> -->
+        {% block links %}
+        {% endblock %}
     </nav>
 
 
