@@ -32,6 +32,8 @@ class SearchForm(FlaskForm):
 class AddUserForm(FlaskForm):
     username = StringField('username', validators=[DataRequired()])
     password = PasswordField('password', validators=[DataRequired()])
+    state = StringField('State of Residency:', validators=[DataRequired()])
+    household_income = SelectField('Household Income:', choices=incomes, validators=[DataRequired()])
 
 
 class LoginForm(FlaskForm):

@@ -50,6 +50,8 @@ def show_home_page():
 
     if 'user_id' in session:
 
+        # add messages for user to add new stories if he has none
+
         saved_queries = []
 
         user = User.query.filter_by(id=session['user_id']).first()
@@ -77,11 +79,16 @@ def create_new_user():
 
         username = request.form['username']
         password = request.form['password']
+        state = request.form['state']
+        household_income = request.form['household_income']
+
+        state_inst = State.query.filter_by(name=state).first()
+        household_income_inst = HouseholdIncome.query.filter_by(household_income=household_income).first()
 
         # convert password with bcrypt
         # store new user/password in db
 
-        user = User(username=username, password=password)
+        user = User(username=username, password=password, home_state_id=state_inst.id, household_income_id=household_income_inst.id)
 
         db.session.add(user)
         db.session.commit()

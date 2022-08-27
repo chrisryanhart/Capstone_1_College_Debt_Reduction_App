@@ -23,6 +23,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(20), unique=True, nullable=False)
+    home_state_id = db.Column(db.Integer,db.ForeignKey("states.id"))
+    household_income_id = db.Column(db.Integer, db.ForeignKey("household_incomes.id"))
 
     user_saved_queries = db.relationship('UserQuerySave', backref='user')
 
