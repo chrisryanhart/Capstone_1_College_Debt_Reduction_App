@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block links %}
+    <li><a href="/logout">Logout</a> <link rel="stylesheet" href=""></li>
+    <li><a href="/search">New Search</a> <link rel="stylesheet" href=""></li>
+    <li><a href="/userProfile">Edit Profile</a> <link rel="stylesheet" href=""></li>
+{% endblock %}
+
+{% block content %}
+
+<p>Made it to user profile</p>
+<form action="" method="post">
+    {{form.hidden_tag()}}
+
+    {% for field in form if field.widget.type != 'hidden' %}
+        <p>
+            {{field.label}}
+            {{field}}
+
+            {% for error in field.errors %}
+                {{error}}
+            {% endfor %}
+        </p>
+    {% endfor %}
+    
+    <p>
+        Confirm password: <input name="password" type="password">
+    </p>
+
+    <div>
+        <button>Modify User</button>
+    </div>
+    <!-- <label for="username">Username:</label>
+    <input name="username" placeholder="Enter username" type="text">
+    <label for="password">Password:</label>
+    <input name="password" type="password" placeholder="Enter password"> -->
+</form>
+
+
+{% endblock %}

@@ -27,6 +27,8 @@ class User(db.Model):
     household_income_id = db.Column(db.Integer, db.ForeignKey("household_incomes.id"))
 
     user_saved_queries = db.relationship('UserQuerySave', backref='user')
+    states = db.relationship('State',backref='user')
+    household_incomes = db.relationship('HouseholdIncome',backref='user')
 
     # searches = db.relationship('Search', secondary= 'users_searches', backref='users')
 

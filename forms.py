@@ -35,6 +35,11 @@ class AddUserForm(FlaskForm):
     state = StringField('State of Residency:', validators=[DataRequired()])
     household_income = SelectField('Household Income:', choices=incomes, validators=[DataRequired()])
 
+class EditUserForm(FlaskForm):
+    username = StringField('username', validators=[DataRequired()])
+    state = StringField('State of Residency:', validators=[DataRequired()])
+    household_income = SelectField('Household Income:', choices=incomes, validators=[DataRequired()])
+
 
 class LoginForm(FlaskForm):
     username = StringField('username', validators=[DataRequired()])

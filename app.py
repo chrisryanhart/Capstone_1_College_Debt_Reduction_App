@@ -12,7 +12,7 @@ import json
 import os
 
 from models import HouseholdIncome, db, connect_db, User, School, Major, State, Credential, QuerySave, UserQuerySave
-from forms import SearchForm, AddUserForm, LoginForm
+from forms import SearchForm, AddUserForm, LoginForm, EditUserForm
 from secret import API_key
 
 CURR_USER_KEY = "curr_user"
@@ -101,6 +101,57 @@ def create_new_user():
 
 
     return render_template('signup.html',form=form)
+
+@app.route('/userProfile',methods=['GET','POST'])
+def edit_user():
+
+    user = User.query.filter_by(id=session['user_id']).first()
+
+    form = EditUserForm()
+
+    if form.validate_on_submit():
+
+        username = request.form['username']
+        home_state = request.form['state']
+        household_income = request.form['household_income']
+        password = request.form['password']
+
+        home_state_inst = State.query.filter_by(name=home_state).first()
+        home_state_id = home_state_inst.id
+
+        household_income_inst = HouseholdIncome.query.filter_by(household_income=household_income).first()
+        household_income_id = household_income_inst.id
+
+        # don't allow user to modify username
+
+        # use bcrypt to store password
+        if password == user.password:
+
+            user.home_state_id = home_state_id
+            user.household_income_id = household_income_id
+            
+            # user_update = User(id=user.id,username=username,password=password, home_state_id=home_state_id,household_income_id=household_income_id)
+            db.session.add(user)
+            db.session.commit()
+
+
+
+
+
+        # update database with username information
+
+
+        return redirect('/')
+
+    # autofill form data 
+    # form.choices['username']
+
+
+    form.username.data = user.username
+    form.state.data = user.states.name
+    form.household_income.data = user.household_incomes.household_income
+
+    return render_template('editUser.html',form=form)
 
 @app.route('/logout')
 def logout_user():
