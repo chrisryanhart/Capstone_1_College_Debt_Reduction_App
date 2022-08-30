@@ -16,7 +16,7 @@ def connect_db(app):
     db.app = app
     db.init_app(app)
 
-# users
+# done
 class User(db.Model):
     __tablename__ = "users"
 
@@ -35,6 +35,7 @@ class User(db.Model):
     def __repr__(self):
         return f'Username: {self.username}'
 
+# done
 class Major(db.Model):
     __tablename__ = "majors"
 
@@ -48,12 +49,17 @@ class HouseholdIncome(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     household_income = db.Column(db.String, nullable=False)
 
+# done
 class School(db.Model):
     __tablename__= "schools"
 
-    id = db.Column(db.String, primary_key=True)
+    id = db.Column(db.String,unique=True, primary_key=True)
     name = db.Column(db.String, nullable=False)
+    state_id = db.Column(db.Integer,db.ForeignKey("states.id"), nullable=False)
 
+    states = db.relationship('State',backref='schools')
+
+# done
 class SchoolMajor(db.Model):
     __tablename__= "schools_majors"
 
@@ -66,43 +72,55 @@ class SchoolMajor(db.Model):
 
     # states = db.relationship('State', backref='saved_queries')
 
-# change to enumerable data type
+# removed
 class Credential(db.Model):
     __tablename__ = "credentials"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String, unique=True, nullable=False)
 
-
+# done
 class State(db.Model):
     __tablename__ = "states"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(2), unique=True, nullable=False)
-
+# done
 class TuitionType(db.Model):
     __tablename__ = "tuition_types"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     type = db.Column(db.String, nullable = False)
 
+class ProgramFinance(db.Model):
+    __tablename__ = "program_finances"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    cost = db.Column(db.Integer, nullable=False)
+    year_1_income = db.Column(db.Integer)
+    year_2_income = db.Column(db.Integer)
+    year_3_income = db.Column(db.Integer)
+    tuition_type_id = db.Column(db.Integer,db.ForeignKey("tuition_types.id"),nullable=False)
+
+# done
 class QuerySave(db.Model):
     __tablename__ = "saved_queries"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     school_id = db.Column(db.String, db.ForeignKey("schools.id"), nullable=False)
     major_id = db.Column(db.String, db.ForeignKey("majors.id"), nullable=False)
-    state_residency_id = db.Column(db.Integer, db.ForeignKey("states.id"), nullable=False)
-    credential_id = db.Column(db.Integer, db.ForeignKey("credentials.id"), nullable=False)
-    household_income_id = db.Column(db.Integer, db.ForeignKey("household_incomes.id"), nullable=False)
+    program_finance_id = db.Column(db.Integer, db.ForeignKey("program_finances.id"), nullable=False)
 
     user_saved_queries = db.relationship('UserQuerySave', backref='saved_queries')
     users = db.relationship('User',secondary="users_saved_queries", backref='saved_queries')
     schools = db.relationship('School', backref='saved_queries')
     majors = db.relationship('Major', backref='saved_queries')
-    states = db.relationship('State', backref='saved_queries')
-    credentials = db.relationship('Credential', backref='saved_queries')
-    household_incomes = db.relationship('HouseholdIncome', backref='saved_queries')
+    program_finances = db.relationship('ProgramFinance',backref='saved_queries')
+    # could add program_finances if desired
+
+# done
+
+
 
 class UserQuerySave(db.Model):
     __tablename__ = "users_saved_queries"

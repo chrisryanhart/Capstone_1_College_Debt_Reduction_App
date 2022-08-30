@@ -1,7 +1,7 @@
 from hashlib import new
 from unicodedata import name
 from all_majors_seed import majors, school_majors
-from models import Credential, SchoolMajor, db, School, Major, State, User, State, HouseholdIncome, SchoolMajor
+from models import Credential, SchoolMajor, db, School, Major, State, User, State, HouseholdIncome, SchoolMajor, ProgramFinance
 from app import app
 
 from all_majors_seed import majors, school_majors
@@ -38,7 +38,7 @@ states = [ 'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA',
            'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA', 'MD', 'ME',
            'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ', 'NM',
            'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX',
-           'UT', 'VA', 'VT', 'WA', 'WI', 'WV', 'WY']
+           'UT', 'VA', 'VT', 'WA', 'WI', 'WV', 'WY','AS','GU','MP','PR','VI','MH','FM']
 
 for state in states:
     state_inst = State(name=state)
@@ -47,18 +47,40 @@ for state in states:
 
 db.session.commit()
 
+duplicate_majors = []
+
 for major in majors:
+    duplicate_majors.append(major['title'])
     try:
         new_major = Major(id=major['code'], title=major['title'])
         db.session.add(new_major)
         db.session.commit()
     except:
         print('school was a duplicate')
+        duplicate_majors.append(major)
+    
+
+duplicate_schools = []
+new_state=[]
 
 for school in school_majors:
-    new_school = School(id=str(school['id']), name=school['school.name'])
-    db.session.add(new_school)
-    db.session.commit()
+    # add school state here
+    try:
+        state_inst = State.query.filter_by(name=school['school.state']).first()
+        state_id = state_inst.id
+    except:
+        print('state doesnt exist')
+        school_state = {'state':school['school.state'], 'name':school['school.name']}
+        new_state.append(school_state)
+
+    duplicate_schools.append(school['school.name'])
+    
+    try:
+        new_school = School(id=str(school['id']), name=school['school.name'],state_id=state_id)
+        db.session.add(new_school)
+        db.session.commit()
+    except:
+        print('state didnt exist')
 
     for major in school['latest.programs.cip_4_digit']:
         new_school_major = SchoolMajor(school_id=school['id'],major_id=major['code'])
@@ -66,6 +88,8 @@ for school in school_majors:
         # major['title']
         db.session.add(new_school_major)
         db.session.commit()
+
+print('done')
 
 # class SchoolMajor(db.Model):
 #     __tablename__= "schools_majors"

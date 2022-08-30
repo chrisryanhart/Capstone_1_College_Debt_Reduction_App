@@ -50,6 +50,7 @@ def show_home_page():
 
     if 'user_id' in session:
 
+        # pull search results from the local database
         # add messages for user to add new stories if he has none
 
         saved_queries = []
@@ -231,32 +232,32 @@ def show_search_results():
         # form will have to accept multiple form values; may need a dynamic form if wanting to add multiple schools
 
         # have to loop through the number of form fields and add school ids to the list
+        user = User.query.get(session['user_id'])
 
-        household_income = request.form['household_income']
+        home_state = user.states.name
+    
+        data['state'] = user.states.name
+
+        household_income = user.household_incomes.household_income
         data['household_income'] = household_income
 
-        state = request.form['state']
-        data['state'] = state
+        # household_income = request.form['household_income']
+        # data['household_income'] = household_income
+
+        # Extract specified state from form input (this is not the user home state)
+        school_state = request.form['school_state']
+        school_state_inst = State.query.filter_by(name=school_state).first()
+        school_state_id = school_state_inst.id
+        # data['state'] = state
 
         school1_name = request.form['school1']
         data['school'] = school1_name
 
-
-        school1 = School.query.filter_by(name=school1_name).first()
-        school1.id
-
-        # school2 = request.form['school2']
+        # state_id should be from user input, not the home state in their profile
+        school1 = School.query.filter_by(name=school1_name,state_id=school_state_id).first()
 
 
-        school_ids = [school1.id]
-        # school_ids = [157085,157289]
-
-        # lst = [8,9,4,1]
-        # s = ",".join([str(i) for i in school_ids])
-        # print(s)
-
-
-        payload = {"id": f"{school_ids[0]}", "_fields": "id,school.name,latest.cost,latest.school.ownership,latest.school.state", "api_key": f"{API_key}"}
+        payload = {"id": f"{school1.id}","school.state": f"{school_state}", "_fields": "id,school.name,latest.cost,latest.school.ownership,latest.school.state", "api_key": f"{API_key}"}
         # print(r.url)
 
         cost_resp = requests.get(f'https://api.data.gov/ed/collegescorecard/v1/schools.json', params=payload)
@@ -265,11 +266,11 @@ def show_search_results():
 
         cost_data = cost_resp.json()
 
-        school_state = cost_data['results'][0]['latest.school.state']
+        # school_state = cost_data['results'][0]['latest.school.state']
         ownership = cost_data['results'][0]['latest.school.ownership']
 
         # verify tuition is out of state and public
-        if state != school_state and ownership == 1:
+        if home_state != school_state and ownership == 1:
             out_of_state_tuition = cost_data['results'][0]['latest.cost.tuition.out_of_state']
             books = cost_data['results'][0]['latest.cost.booksupply']
             roomboard = cost_data['results'][0]['latest.cost.roomboard.oncampus']
@@ -281,7 +282,6 @@ def show_search_results():
             data['tuition_type'] = 'Out-of-state'
 
 
-
         # include option to not accept student aid (in-state total cost without aid)
 
        
@@ -291,7 +291,7 @@ def show_search_results():
             data['tuition'] = private_net_cost
             data['tuition_type'] = 'N/A'
 
-        if state == school_state and ownership == 1:
+        if home_state == school_state and ownership == 1:
             net_in_state_public_cost = cost_data['results'][0][f'latest.cost.net_price.public.by_income_level.{household_income}']
             data['tuition'] = net_in_state_public_cost
             data['tuition_type'] = 'In-state'
@@ -408,6 +408,10 @@ def retrieve_saved_queries(saved_queries):
 
 @app.route('/API/saveSearch',methods=['POST'])
 def save_search_result():
+    # have to extract form input data from both Query and Results
+    # save to local database
+    # state now required
+
     if 'user_id' not in session:
         # flash message
         return redirect('/')

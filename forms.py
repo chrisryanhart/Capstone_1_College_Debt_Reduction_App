@@ -23,8 +23,8 @@ class SearchForm(FlaskForm):
     major1 = StringField('Major:', validators=[DataRequired()])
     # major1 = SelectField('Select Major: ',coerce=int)
     school1 = StringField('College:', validators=[DataRequired()])
-    state = StringField('State of Residency:', validators=[DataRequired()])
-    household_income = SelectField('Household Income:', choices=incomes, validators=[DataRequired()])
+    school_state = StringField('State:', validators=[DataRequired()])
+    # household_income = SelectField('Household Income:', choices=incomes, validators=[DataRequired()])
     # household_income = StringField('Household Income', va)
 
 
