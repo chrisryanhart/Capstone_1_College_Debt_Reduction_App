@@ -11,7 +11,7 @@ import requests
 import json
 import os
 
-from models import HouseholdIncome, ProgramFinance, TuitionType, db, connect_db, User, School, Major, State, Credential, QuerySave, UserQuerySave
+from models import HouseholdIncome, ProgramFinance, TuitionType, db, connect_db, User, School, Major, State, SchoolMajor
 from forms import SearchForm, AddUserForm, LoginForm, EditUserForm
 from secret import API_key
 
@@ -53,13 +53,11 @@ def show_home_page():
         # pull search results from the local database
         # add messages for user to add new stories if he has none
 
-        saved_queries = []
-
         user = User.query.filter_by(id=session['user_id']).first()
 
-        saved_queries = user.saved_queries
+        program_finances = user.program_finances
 
-        data = retrieve_saved_queries(saved_queries)
+        data = retrieve_program_finances(program_finances)
 
         return render_template('savedQueries.html', user=user, data=data)
 
@@ -352,7 +350,7 @@ def show_saved_queries():
         # flash message
         return redirect('/')
 
-    saved_queries = QuerySave.query.all()
+    program_finances = ProgramFinance.query.filter_by(user_id=session['user_id']).all()
     # retreive stored searches from db from the logged in user
 
     # queries have to be made to get the state, HH_income_id
@@ -361,7 +359,7 @@ def show_saved_queries():
     # does combining the query depend on if the major is the same?
     # data = []
 
-    data = retrieve_saved_queries(saved_queries)
+    data = retrieve_program_finances(program_finances)
 
     # data = [query_data]
 
@@ -386,24 +384,24 @@ def show_saved_queries():
     return render_template('savedQueries.html', data=data)
 
 
-def retrieve_saved_queries(saved_queries):
+def retrieve_program_finances(program_finances):
     data = []
 
-    for query in saved_queries:
-        query_data = {}
+    for program_finance in program_finances:
+        program_finance_data = {}
         
-        query_data['school_name'] = query.schools.name
-        query_data['major_name'] = query.majors.title
-        query_data['credential_title'] = 'Bachelors Degree'
-        query_data['school_state'] = query.schools.states.name
+        program_finance_data['school_name'] = program_finance.schools.name
+        program_finance_data['major_name'] = program_finance.majors.title
+        program_finance_data['credential_title'] = 'Bachelors Degree'
+        program_finance_data['school_state'] = program_finance.schools.states.name
      
-        program_finance_inst = ProgramFinance.query.get(query.program_finance_id)
+        # program_finance_inst = ProgramFinance.query.get(query.program_finance_id)
 
-        query_data['yr_1_earnings'] = program_finance_inst.year_1_income
-        query_data['yr_2_earnings'] = program_finance_inst.year_2_income
-        query_data['yr_3_earnings'] = program_finance_inst.year_3_income
-        query_data['cost'] = program_finance_inst.cost
-        query_data['tuition_type'] = program_finance_inst.tuition_types.tuition_type
+        program_finance_data['yr_1_earnings'] = program_finance.year_1_income
+        program_finance_data['yr_2_earnings'] = program_finance.year_2_income
+        program_finance_data['yr_3_earnings'] = program_finance.year_3_income
+        program_finance_data['cost'] = program_finance.cost
+        program_finance_data['tuition_type'] = program_finance.tuition_types.tuition_type
         
         # as I loop through, I can retrieve the names to add the results screen
         # school_id = query.school_id
@@ -415,7 +413,7 @@ def retrieve_saved_queries(saved_queries):
         # resp = call_college_API(school_id,major_id,credential_id,state,household_income)
 
        
-        data.append(query_data)
+        data.append(program_finance_data)
 
     return data
 
@@ -464,16 +462,6 @@ def save_search_result():
             # 1. store program finance entry
             tuition_type_inst = TuitionType.query.filter_by(tuition_type=tuition_type).first()
 
-
-            new_program_finance = ProgramFinance(cost=cost,year_1_income=income_yr1,year_2_income=income_yr2,year_3_income=income_yr3,tuition_type_id=tuition_type_inst.id)
-            db.session.add(new_program_finance)
-            db.session.commit()
-
-
-            # 2. store saved_query data
-
-
-            # 3. Add saved_query to user profile
             state_inst = State.query.filter_by(name=school_state).first()
             school_state_id = state_inst.id
 
@@ -483,12 +471,36 @@ def save_search_result():
             major_inst = Major.query.filter_by(title=major_title).first()
             major_id = major_inst.id
 
-            degree_inst = Credential.query.filter_by(title=degree_title).first()
-            degree_id = degree_inst.id
 
-            new_saved_query = QuerySave(major_id=major_id,school_id=school_id, program_finance_id=new_program_finance.id)
-            db.session.add(new_saved_query)
+            new_program_finance = ProgramFinance(user_id=session['user_id'], school_id=school_id, major_id=major_id, cost=cost,year_1_income=income_yr1,year_2_income=income_yr2,year_3_income=income_yr3,tuition_type_id=tuition_type_inst.id)
+            db.session.add(new_program_finance)
             db.session.commit()
+
+
+
+            # class ProgramFinance(db.Model):
+            #     __tablename__ = "program_finances"
+
+            #     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+            #     user_id = db.Column(db.Integer, db.ForeignKey('users.id'),nullable=False)
+            #     school_id = db.Column(db.String, db.ForeignKey("schools.id"), nullable=False)
+            #     major_id = db.Column(db.String, db.ForeignKey("majors.id"), nullable=False)
+            #     cost = db.Column(db.Integer, nullable=False)
+            #     year_1_income = db.Column(db.Integer)
+            #     year_2_income = db.Column(db.Integer)
+            #     year_3_income = db.Column(db.Integer)
+            #     tuition_type_id = db.Column(db.Integer,db.ForeignKey("tuition_types.id"),nullable=False)
+
+
+            # 3. Add saved_query to user profile
+
+
+            # degree_inst = Credential.query.filter_by(title=degree_title).first()
+            # degree_id = degree_inst.id
+
+            # new_saved_query = QuerySave(major_id=major_id,school_id=school_id, program_finance_id=new_program_finance.id)
+            # db.session.add(new_saved_query)
+            # db.session.commit()
 
             # household_income_inst = HouseholdIncome.query.filter_by(household_income=household_income_range).first()
             # household_income_id = household_income_inst.id
@@ -500,15 +512,20 @@ def save_search_result():
             # db.session.add(favorite_query)
             # db.session.commit()
 
-            user_saved_query = UserQuerySave(query_id=new_saved_query.id,user_id=curr_user.id)
+            # user_saved_query = UserQuerySave(query_id=new_saved_query.id,user_id=curr_user.id)
 
-            db.session.add(user_saved_query)
-            db.session.commit()
+            # db.session.add(user_saved_query)
+            # db.session.commit()
+
+            # data = {
+            #     # 'users_saved_querires_id': user_saved_query.id,
+            #     'saved_query_id': new_saved_query.id,
+            #     'program_finance_id': new_program_finance.id
+            # }
 
             data = {
-                # 'users_saved_querires_id': user_saved_query.id,
-                'saved_query_id': new_saved_query.id,
-                'program_finance_id': new_program_finance.id
+                'program_finance_id': new_program_finance.id,
+                'status': 'Program finance added to database'
             }
 
             return jsonify(data)
@@ -516,27 +533,22 @@ def save_search_result():
 
         elif data['check_status'] == False:
             
-            saved_query_id = data['saved_query_id']
+            # saved_query_id = data['saved_query_id']
             program_finance_id = data['program_finance_id']
             user_id = session['user_id']
 
-
-            user_saved_query = UserQuerySave.query.filter_by(query_id=saved_query_id,user_id=user_id).first()
+            program_finance = ProgramFinance.query.get(program_finance_id)
+            # user_saved_query = UserQuerySave.query.filter_by(query_id=saved_query_id,user_id=user_id).first()
             # UserQuerySave(query_id=saved_query_id,user_id=user_id)
-            db.session.delete(user_saved_query)
+            db.session.delete(program_finance)
             db.session.commit()
 
-            # if saved query doesn't appear in user saved queries table, delete query
+            data = {
+                'program_finance_id': program_finance_id,
+                'status': 'Program finance deleted from database'
+            }
 
-            saved_query_inst = QuerySave.query.get(saved_query_id)
-            db.session.delete(saved_query_inst)
-            db.session.commit()
-
-            program_finance_inst = ProgramFinance.query.get(program_finance_id)
-            db.session.delete(program_finance_inst)
-            db.session.commit()
-
-            return 'query deleted'
+            return jsonify(data)
 
 
     return 'success'

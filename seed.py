@@ -1,7 +1,7 @@
 from hashlib import new
 from unicodedata import name
 from all_majors_seed import majors, school_majors
-from models import Credential, SchoolMajor, TuitionType, db, School, Major, State, User, State, HouseholdIncome, SchoolMajor, ProgramFinance
+from models import SchoolMajor, TuitionType, db, School, Major, State, User, HouseholdIncome, SchoolMajor, ProgramFinance
 from app import app
 
 from all_majors_seed import majors, school_majors
@@ -10,11 +10,15 @@ db.drop_all()
 db.create_all()
 
 # empty table if not already empty
+SchoolMajor.query.delete()
+TuitionType.query.delete()
+HouseholdIncome.query.delete()
+ProgramFinance.query.delete()
 User.query.delete()
 # Search.query.delete()
 School.query.delete()
 Major.query.delete()
-Credential.query.delete()
+# Credential.query.delete()
 State.query.delete()
 # UserSearch.query.delete()
 
@@ -23,15 +27,15 @@ State.query.delete()
 #     degree = Degree(degree=title)
 #     db.session.add(degree)
 
-credential3 = Credential(id=3,title='Bachelors Degree')
-credential5 = Credential(id=5,title="Master's Degree")
-credential6 = Credential(id=6,title="Doctoral Degree")
+# credential3 = Credential(id=3,title='Bachelors Degree')
+# credential5 = Credential(id=5,title="Master's Degree")
+# credential6 = Credential(id=6,title="Doctoral Degree")
 
-db.session.add(credential3)
-db.session.add(credential5)
-db.session.add(credential6)
+# db.session.add(credential3)
+# db.session.add(credential5)
+# db.session.add(credential6)
 
-db.session.commit()
+# db.session.commit()
 
 
 states = [ 'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA',
@@ -44,7 +48,6 @@ for state in states:
     state_inst = State(name=state)
     db.session.add(state_inst)
     
-
 db.session.commit()
 
 duplicate_majors = []
@@ -91,6 +94,7 @@ for school in school_majors:
 
 print('done')
 
+
 # class SchoolMajor(db.Model):
 #     __tablename__= "schools_majors"
 
@@ -113,4 +117,9 @@ db.session.commit()
 
 tuition_type2 = TuitionType(id=2,tuition_type='Out-of-state')
 db.session.add(tuition_type2)
+db.session.commit()
+
+# add 3rd type for private
+tuition_type3 = TuitionType(id=3,tuition_type='N/A')
+db.session.add(tuition_type3)
 db.session.commit()

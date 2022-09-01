@@ -31,7 +31,7 @@ async function saveSearch(e){
     const $incomeYr3 = $('#income-year3').val();
     const $tuitionType = $('#tuition-type').val();
 
-    const $savedQueryId = $('#savedQuery').val();
+    // const $savedQueryId = $('#savedQuery').val();
     const $programFinanceId = $('#program-finance').val();
 
     // if hidden inputs exist, select elements
@@ -58,7 +58,7 @@ async function saveSearch(e){
           income_yr3: $incomeYr3,
           tuition_type: $tuitionType,
           program_finance_id: $programFinanceId,
-          saved_query_id: $savedQueryId,
+          // saved_query_id: $savedQueryId,
           check_status: isChecked
         }
       });
@@ -68,20 +68,23 @@ async function saveSearch(e){
 
     const data = resp.data;
 
-    if (data !== 'query deleted'){
+    if (data.status === 'Program finance added to database'){
       $tr = $searchSaveStatus.closest('tr');
 
-      $savedQueryInput = `<input id="savedQuery" type="hidden" value="${data.saved_query_id}">`;
+      // $savedQueryInput = `<input id="savedQuery" type="hidden" value="${data.saved_query_id}">`;
       $programFinanceInput = `<input id="program-finance" type="hidden" value="${data.program_finance_id}">`;
       
-      $tr.append($savedQueryInput);
+      // $tr.append($savedQueryInput);
       $tr.append($programFinanceInput);
     } 
-    // else if (data === 'query deleted'){
-    //   // select input id
-    //   // remove from input from DOM
+    else if (data.status === 'Program finance deleted from database'){
+      // select input id
+      // remove from input from DOM
+      $('#program-finance').remove();
 
-    // }
+      console.log('in else statement');
+
+    }
 
     
     console.log('Entered Save search');
