@@ -1,7 +1,7 @@
 from random import choices
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField
-from wtforms.validators import DataRequired
+from wtforms import StringField, PasswordField, SelectField, validators
+from wtforms.validators import DataRequired, AnyOf, NoneOf, InputRequired
 from enum import Enum
 
 # class Income(Enum):
@@ -26,7 +26,6 @@ class SearchForm(FlaskForm):
     school_state = StringField('State:', validators=[DataRequired()])
     # household_income = SelectField('Household Income:', choices=incomes, validators=[DataRequired()])
     # household_income = StringField('Household Income', va)
-
 
 
 class AddUserForm(FlaskForm):

@@ -1,7 +1,7 @@
 from hashlib import new
 from unicodedata import name
 from all_majors_seed import majors, school_majors
-from models import Credential, SchoolMajor, db, School, Major, State, User, State, HouseholdIncome, SchoolMajor, ProgramFinance
+from models import Credential, SchoolMajor, TuitionType, db, School, Major, State, User, State, HouseholdIncome, SchoolMajor, ProgramFinance
 from app import app
 
 from all_majors_seed import majors, school_majors
@@ -100,14 +100,17 @@ print('done')
 
 # school_majors[0]['school.name'] 
 
-
-
-
-
-
 incomes = ["0-30000","30001-48000","48001-75000","75001-110000","110001-plus"]
 
 for range in incomes:
     new_income = HouseholdIncome(household_income=range)
     db.session.add(new_income)
+db.session.commit()
+
+tuition_type1 = TuitionType(id=1,tuition_type='In-state')
+db.session.add(tuition_type1)
+db.session.commit()
+
+tuition_type2 = TuitionType(id=2,tuition_type='Out-of-state')
+db.session.add(tuition_type2)
 db.session.commit()

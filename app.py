@@ -11,7 +11,7 @@ import requests
 import json
 import os
 
-from models import HouseholdIncome, db, connect_db, User, School, Major, State, Credential, QuerySave, UserQuerySave
+from models import HouseholdIncome, ProgramFinance, TuitionType, db, connect_db, User, School, Major, State, Credential, QuerySave, UserQuerySave
 from forms import SearchForm, AddUserForm, LoginForm, EditUserForm
 from secret import API_key
 
@@ -185,7 +185,7 @@ def login_user():
     return render_template('login.html', form=form)
 
 
-@app.route('/search', methods=['GET'])
+@app.route('/search', methods=['GET','POST'])
 def search_schools_majors():
     # All school and major combos will have to be preloaded
 
@@ -215,6 +215,8 @@ def search_schools_majors():
 
 @app.route('/search/results', methods=['POST'])
 def show_search_results():
+    data = {}
+
     if 'user_id' not in session:
         # flash message
         return redirect('/')
@@ -223,7 +225,7 @@ def show_search_results():
 
     if form.validate_on_submit():
 
-        data = {}
+        # data = {}
 
         # school cost based on income.  Will change the data structure.  
 
@@ -248,7 +250,7 @@ def show_search_results():
         school_state = request.form['school_state']
         school_state_inst = State.query.filter_by(name=school_state).first()
         school_state_id = school_state_inst.id
-        # data['state'] = state
+        data['school_state'] = school_state
 
         school1_name = request.form['school1']
         data['school'] = school1_name
@@ -334,14 +336,14 @@ def show_search_results():
 
     #     session['data'] = data
 
-
+    
     # data = session['data']
 
     # if user likes the data, store the search results
     # stay on same page 
 
 
-    return render_template('results.html',data=data)
+    return render_template('results.html',data=data, form=form)
 
 
 @app.route('/savedQueries', methods=['GET'])
@@ -388,20 +390,32 @@ def retrieve_saved_queries(saved_queries):
     data = []
 
     for query in saved_queries:
-        # as I loop through, I can retrieve the names to add the results screen
-        school_id = query.school_id
-        major_id = query.major_id
-        credential_id = query.credential_id
-        state = query.states.name
-        household_income = query.household_incomes.household_income
-
-        resp = call_college_API(school_id,major_id,credential_id,state,household_income)
-
-        resp['school_name'] = query.schools.name
-        resp['major_name'] = query.majors.title
-        resp['credential_title'] = query.credentials.title
+        query_data = {}
         
-        data.append(resp)
+        query_data['school_name'] = query.schools.name
+        query_data['major_name'] = query.majors.title
+        query_data['credential_title'] = 'Bachelors Degree'
+        query_data['school_state'] = query.schools.states.name
+     
+        program_finance_inst = ProgramFinance.query.get(query.program_finance_id)
+
+        query_data['yr_1_earnings'] = program_finance_inst.year_1_income
+        query_data['yr_2_earnings'] = program_finance_inst.year_2_income
+        query_data['yr_3_earnings'] = program_finance_inst.year_3_income
+        query_data['cost'] = program_finance_inst.cost
+        query_data['tuition_type'] = program_finance_inst.tuition_types.tuition_type
+        
+        # as I loop through, I can retrieve the names to add the results screen
+        # school_id = query.school_id
+        # major_id = query.major_id
+        # credential_id = query.credential_id
+        # state = query.states.name
+        # household_income = query.household_incomes.household_income
+
+        # resp = call_college_API(school_id,major_id,credential_id,state,household_income)
+
+       
+        data.append(query_data)
 
     return data
 
@@ -429,13 +443,41 @@ def save_search_result():
 
 
 
+        #   tuition_type: $tuitionType,
+        #   check_status: isChecked
+
+
             school_name = data['school']
             major_title = data['major']
             degree_title = data['degree']
             household_income_range = data['household_income']
             home_state_name = data['home_state']
 
-            school_inst = School.query.filter_by(name=school_name).first()
+            school_state = data['school_state']
+            cost = data['cost']
+            income_yr1 = data['income_yr1']
+            income_yr2 = data['income_yr2']
+            income_yr3 = data['income_yr3']
+            tuition_type = data['tuition_type']
+
+
+            # 1. store program finance entry
+            tuition_type_inst = TuitionType.query.filter_by(tuition_type=tuition_type).first()
+
+
+            new_program_finance = ProgramFinance(cost=cost,year_1_income=income_yr1,year_2_income=income_yr2,year_3_income=income_yr3,tuition_type_id=tuition_type_inst.id)
+            db.session.add(new_program_finance)
+            db.session.commit()
+
+
+            # 2. store saved_query data
+
+
+            # 3. Add saved_query to user profile
+            state_inst = State.query.filter_by(name=school_state).first()
+            school_state_id = state_inst.id
+
+            school_inst = School.query.filter_by(name=school_name,state_id=school_state_id).first()
             school_id = school_inst.id
 
             major_inst = Major.query.filter_by(title=major_title).first()
@@ -444,53 +486,57 @@ def save_search_result():
             degree_inst = Credential.query.filter_by(title=degree_title).first()
             degree_id = degree_inst.id
 
-
-            household_income_inst = HouseholdIncome.query.filter_by(household_income=household_income_range).first()
-            household_income_id = household_income_inst.id
-
-            home_state_inst = State.query.filter_by(name=home_state_name).first()
-            home_state_id = home_state_inst.id
-
-            favorite_query = QuerySave(school_id=school_id, major_id=major_id, state_residency_id=home_state_id, credential_id=degree_id, household_income_id=household_income_id)
-            db.session.add(favorite_query)
+            new_saved_query = QuerySave(major_id=major_id,school_id=school_id, program_finance_id=new_program_finance.id)
+            db.session.add(new_saved_query)
             db.session.commit()
 
-            user_saved_query = UserQuerySave(query_id=favorite_query.id,user_id=curr_user.id)
+            # household_income_inst = HouseholdIncome.query.filter_by(household_income=household_income_range).first()
+            # household_income_id = household_income_inst.id
+
+            # home_state_inst = State.query.filter_by(name=home_state_name).first()
+            # home_state_id = home_state_inst.id
+
+            # favorite_query = QuerySave(school_id=school_id, major_id=major_id, state_residency_id=home_state_id, credential_id=degree_id, household_income_id=household_income_id)
+            # db.session.add(favorite_query)
+            # db.session.commit()
+
+            user_saved_query = UserQuerySave(query_id=new_saved_query.id,user_id=curr_user.id)
 
             db.session.add(user_saved_query)
             db.session.commit()
 
-            test=1
+            data = {
+                # 'users_saved_querires_id': user_saved_query.id,
+                'saved_query_id': new_saved_query.id,
+                'program_finance_id': new_program_finance.id
+            }
+
+            return jsonify(data)
 
 
         elif data['check_status'] == False:
-            saved_query = QuerySave.query.first()
+            
+            saved_query_id = data['saved_query_id']
+            program_finance_id = data['program_finance_id']
+            user_id = session['user_id']
 
-            db.session.delete(saved_query)
+
+            user_saved_query = UserQuerySave.query.filter_by(query_id=saved_query_id,user_id=user_id).first()
+            # UserQuerySave(query_id=saved_query_id,user_id=user_id)
+            db.session.delete(user_saved_query)
             db.session.commit()
 
-            # return 'query deleted'
+            # if saved query doesn't appear in user saved queries table, delete query
 
-            # class QuerySave(db.Model):
-            # __tablename__ = "saved_queries"
+            saved_query_inst = QuerySave.query.get(saved_query_id)
+            db.session.delete(saved_query_inst)
+            db.session.commit()
 
-            # id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-            # school_id = db.Column(db.String, db.ForeignKey("schools.id"), nullable=False)
-            # major_id = db.Column(db.Integer, db.ForeignKey("majors.id"), nullable=False)
-            # state_residency_id = db.Column(db.Integer, db.ForeignKey("states.id"), nullable=False)
-            # credential_id = db.Column(db.Integer, db.ForeignKey("credentials.id"), nullable=False)
-        # household_income_id = db.Column(db.Integer, db.ForeignKey("household_incomes.id"), nullable=False)
+            program_finance_inst = ProgramFinance.query.get(program_finance_id)
+            db.session.delete(program_finance_inst)
+            db.session.commit()
 
-        # user_saved_queries = db.relationship('UserQuerySave', backref='saved_queries')
-        # users = db.relationship('User',secondary="users_saved_queries", backref='saved_queries')
-        # extract form data
-
-        # if checkbox checked, save data
-
-        # if checkbox unchecked, delete instance
-
-        # Create model instance
-        # commit to database
+            return 'query deleted'
 
 
     return 'success'

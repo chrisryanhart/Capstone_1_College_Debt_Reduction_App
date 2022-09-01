@@ -90,7 +90,7 @@ class TuitionType(db.Model):
     __tablename__ = "tuition_types"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    type = db.Column(db.String, nullable = False)
+    tuition_type = db.Column(db.String, nullable = False)
 
 class ProgramFinance(db.Model):
     __tablename__ = "program_finances"
@@ -102,6 +102,7 @@ class ProgramFinance(db.Model):
     year_3_income = db.Column(db.Integer)
     tuition_type_id = db.Column(db.Integer,db.ForeignKey("tuition_types.id"),nullable=False)
 
+    tuition_types = db.relationship('TuitionType', backref='program_finances')
 # done
 class QuerySave(db.Model):
     __tablename__ = "saved_queries"

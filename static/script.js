@@ -17,16 +17,31 @@ async function saveSearch(e){
       isChecked = false
     }
     
+    // get variables from DB schema
     const $school = $('#school').val()
     const $major = $('#major').val()
-    const $degree = $('#degree').val()
-    const $household_income = $('#HH-income').val()
-    const $home_state = $('#home-state').val()
+    const $degree = $('#degree').val();
+    const $householdIncome = $('#HH-income').val();
+    const $homeState = $('#home-state').val();
+    const $schoolState = $('#school-state').val();
+
+    const $cost = $('#cost').val();
+    const $incomeYr1 = $('#income-year1').val();
+    const $incomeYr2 = $('#income-year2').val();
+    const $incomeYr3 = $('#income-year3').val();
+    const $tuitionType = $('#tuition-type').val();
+
+    const $savedQueryId = $('#savedQuery').val();
+    const $programFinanceId = $('#program-finance').val();
+
+    // if hidden inputs exist, select elements
+
 
     // get data from input fields
     // school, major, home_state, credential, HH_income_id
     
-
+    // add query id to the table
+    // query id can only be assigned after the search is saved
     let resp = await axios({
         method: 'post',
         url: 'http://localhost:5000/API/saveSearch',
@@ -34,13 +49,42 @@ async function saveSearch(e){
           school: $school,
           major: $major,
           degree: $degree,
-          household_income: $household_income,
-          home_state: $home_state,
+          household_income: $householdIncome,
+          home_state: $homeState,
+          school_state: $schoolState,
+          cost: $cost,
+          income_yr1: $incomeYr1,
+          income_yr2: $incomeYr2,
+          income_yr3: $incomeYr3,
+          tuition_type: $tuitionType,
+          program_finance_id: $programFinanceId,
+          saved_query_id: $savedQueryId,
           check_status: isChecked
         }
       });
 
-    console.log('Entered Save search')
+    // append saved_query id to the html table in the DOM
+
+
+    const data = resp.data;
+
+    if (data !== 'query deleted'){
+      $tr = $searchSaveStatus.closest('tr');
+
+      $savedQueryInput = `<input id="savedQuery" type="hidden" value="${data.saved_query_id}">`;
+      $programFinanceInput = `<input id="program-finance" type="hidden" value="${data.program_finance_id}">`;
+      
+      $tr.append($savedQueryInput);
+      $tr.append($programFinanceInput);
+    } 
+    // else if (data === 'query deleted'){
+    //   // select input id
+    //   // remove from input from DOM
+
+    // }
+
+    
+    console.log('Entered Save search');
 
 
 }

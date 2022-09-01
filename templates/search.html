@@ -15,15 +15,17 @@
 
     {% for field in form if field.widget.type != 'hidden' %}
         {% if field.label.text == "Major:" %}
-            
-            {{field.label}}
-            {{field(list=field.name + "-list")}}
+            <p>
+                {{field.label}}
+                {{field(list=field.name + "-list")}}
+    
+                    <datalist id="{{field.name}}-list">
+                        {% for major in majors %}
+                            <option value="{{major.title}}">
+                        {% endfor %}
+                    </datalist>
+            </p>
 
-            <datalist id="{{field.name}}-list">
-                {% for major in majors %}
-                    <option value="{{major.title}}">
-                {% endfor %}
-            </datalist>
             <p>
                 {% for error in field.errors %}
                     {{error}}
@@ -32,41 +34,46 @@
 
         {% elif field.label.text == "College:" %}
 
-            {{field.label}}
-            {{field(list=field.name + "-list")}}
-
-            <datalist id="{{field.name}}-list">
-                {% for school in schools %}
-                    <option value="{{school.name}}">
-                {% endfor %}
-            </datalist>
             <p>
-            {% for error in field.errors %}
-                {{error}}
-            {% endfor %}
+                {{field.label}}
+                {{field(list=field.name + "-list")}}
+    
+                    <datalist id="{{field.name}}-list">
+                        {% for school in schools %}
+                            <option value="{{school.name}}">
+                        {% endfor %}
+                    </datalist>
+            </p>
+
+            <p>
+                {% for error in field.errors %}
+                    {{error}}
+                {% endfor %}
+            </p>
+
         
         {% elif field.label.text == 'State:' %}
                 
             {{field.label}}
             {{field(list=field.name + "-list")}}
 
-            <datalist id="{{field.name}}-list">
-                {% for state in states %}
-                    <option value="{{state.name}}">
-                {% endfor %}
-            </datalist>
+                <datalist id="{{field.name}}-list">
+                    {% for state in states %}
+                        <option value="{{state.name}}">
+                    {% endfor %}
+                </datalist>
             <p>
-            {% for error in field.errors %}
-                {{error}}
-            {% endfor %}
+                {% for error in field.errors %}
+                    {{error}}
+                {% endfor %}
+            </p>
+
         {% else %}
             <p>
-
                 {{field.label}}
-
                 {{field}}
-
-
+            </p>
+            <p>
                 {% for error in field.errors %}
                     {{error}}
                 {% endfor %}

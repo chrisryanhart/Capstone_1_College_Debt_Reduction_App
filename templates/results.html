@@ -13,6 +13,7 @@
     <table>
         <tr>
             <th>College:</th>
+            <th>State:</th>
             <th>Major:</th>
             <th>Degree Type:</th>
             <th style="display: none;">Household Income:</th>
@@ -26,18 +27,25 @@
         </tr>
         <tr>
             <td><input id="school" type="text" value="{{data.school}}"></td>
+            <td><input id="school-state" type="text" value="{{data.school_state}}"></td>
             <td><input id="major" type="text" value="{{data.major}}"></td>
             <td><input id="degree" type="text" value="{{data.degree}}"></td>
             <td style="display: none;"><input id='HH-income' type="text" value="{{data.household_income}}"></td>
             <td style="display: none;"><input id="home-state" type="text" value="{{data.state}}"></td>
             <td><input id="tuition-type" type="text" value="{{data.tuition_type}}"></td>
-            <td>$<input id="tuition" type="number" value="{{data.tuition}}"></td>
-            <td>$<input id="yr_1_salary" type="number" value="{{data.yr_1_earnings}}"></td>
-            <td>$<input id="yr_2_salary" type="number" value="{{data.yr_2_earnings}}"></td>
-            <td>$<input id="yr_3_salary" type="number" value="{{data.yr_3_earnings}}"></td>
+            <td>$<input id="cost" type="number" value="{{data.tuition}}"></td>
+            <td>$<input id="income-year1" type="number" value="{{data.yr_1_earnings}}"></td>
+            <td>$<input id="income-year2" type="number" value="{{data.yr_2_earnings}}"></td>
+            <td>$<input id="income-year3" type="number" value="{{data.yr_3_earnings}}"></td>
             <td><label for="saved"><input type="checkbox" id="save_search" name="saved"></label></td>            
         </tr>
     </table>
+    {% for field in form if field.widget.type != 'hidden' %}
+        {% for error in field.errors %}
+            {{error}}
+        {% endfor %}
+    {% endfor %}
+
 </div>
 
 {% endblock %}
