@@ -133,24 +133,19 @@ def edit_user():
             db.session.add(user)
             db.session.commit()
 
-
-
-
-
         # update database with username information
-
 
         return redirect('/')
 
     # autofill form data 
     # form.choices['username']
 
-
     form.username.data = user.username
     form.state.data = user.states.name
     form.household_income.data = user.household_incomes.household_income
 
     return render_template('editUser.html',form=form)
+
 
 @app.route('/logout')
 def logout_user():
@@ -198,32 +193,9 @@ def search_schools_majors():
         # return redirect('/search/results')
     
     # query database for majors and schools
-
-    schools = School.query.order_by(School.name).all()
-
-    majors = Major.query.order_by(Major.title).all()
-
-    states = State.query.all()
-
-    # majors = [(major.id,major.title) for major in Major.query.all()]
-
-    # form.major1.choices = majors
-
-    return render_template('/search.html',form=form,schools=schools,majors=majors, states=states)
-
-@app.route('/search/results', methods=['POST'])
-def show_search_results():
-    data = {}
-
-    if 'user_id' not in session:
-        # flash message
-        return redirect('/')
-
-    form = SearchForm()
-
     if form.validate_on_submit():
 
-        # data = {}
+        data = {}
 
         # school cost based on income.  Will change the data structure.  
 
@@ -332,16 +304,29 @@ def show_search_results():
         data['yr_3_earnings'] = yr_3_earnings
         
 
-    #     session['data'] = data
-
-    
-    # data = session['data']
-
-    # if user likes the data, store the search results
-    # stay on same page 
+        return render_template('results.html',data=data, form=form)
 
 
-    return render_template('results.html',data=data, form=form)
+
+    schools = School.query.order_by(School.name).all()
+    majors = Major.query.order_by(Major.title).all()
+    states = State.query.all()
+
+    # majors = [(major.id,major.title) for major in Major.query.all()]
+
+    # form.major1.choices = majors
+
+    return render_template('/search.html',form=form,schools=schools,majors=majors, states=states)
+
+# @app.route('/search/results', methods=['POST'])
+# def show_search_results():
+#     data = {}
+
+#     if 'user_id' not in session:
+#         # flash message
+#         return redirect('/')
+
+#     form = SearchForm()
 
 
 @app.route('/savedQueries', methods=['GET'])

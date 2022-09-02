@@ -1,10 +1,9 @@
 from hashlib import new
 from unicodedata import name
 from all_majors_seed import majors, school_majors
-from models import SchoolMajor, TuitionType, db, School, Major, State, User, HouseholdIncome, SchoolMajor, ProgramFinance
+from models import db, SchoolMajor, TuitionType, School, Major, State, User, HouseholdIncome, SchoolMajor, ProgramFinance
 from app import app
 
-from all_majors_seed import majors, school_majors
 
 db.drop_all()
 db.create_all()
@@ -50,10 +49,11 @@ for state in states:
     
 db.session.commit()
 
+all_majors = []
 duplicate_majors = []
 
 for major in majors:
-    duplicate_majors.append(major['title'])
+    all_majors.append(major['title'])
     try:
         new_major = Major(id=major['code'], title=major['title'])
         db.session.add(new_major)
@@ -61,10 +61,21 @@ for major in majors:
     except:
         print('school was a duplicate')
         duplicate_majors.append(major)
+
+print('through major titles')
+
+unique_major_titles = list(set(duplicate_majors))
+
+print('extracted unique titles')
     
 
 duplicate_schools = []
 new_state=[]
+major_titles = []
+
+extracted_school_names = []
+school_names = []
+
 
 for school in school_majors:
     # add school state here
@@ -76,7 +87,7 @@ for school in school_majors:
         school_state = {'state':school['school.state'], 'name':school['school.name']}
         new_state.append(school_state)
 
-    duplicate_schools.append(school['school.name'])
+    extracted_school_names.append(school['school.name'])
     
     try:
         new_school = School(id=str(school['id']), name=school['school.name'],state_id=state_id)
@@ -91,6 +102,10 @@ for school in school_majors:
         # major['title']
         db.session.add(new_school_major)
         db.session.commit()
+print('finished loops')
+
+school_names = list(set(extracted_school_names))
+
 
 print('done')
 
