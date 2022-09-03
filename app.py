@@ -14,6 +14,7 @@ import os
 from models import HouseholdIncome, ProgramFinance, TuitionType, db, connect_db, User, School, Major, State, SchoolMajor
 from forms import SearchForm, AddUserForm, LoginForm, EditUserForm
 from secret import API_key
+from all_majors_seed import unique_major_titles
 
 CURR_USER_KEY = "curr_user"
 
@@ -190,10 +191,47 @@ def search_schools_majors():
 
     form = SearchForm()
 
+    form_status = False
+
+    if form.validate_on_submit():
+        form_status = True
+
+        school1_name = request.form['school1']
+        school_state = request.form['school_state']
+        major_title = request.form['major1']
+        major_inst = Major.query.filter_by(title=major_title).first()
+        # check for multiple major names
+
+        state_inst = State.query.filter_by(name=school_state).first()
+
+        
+        school_inst = School.query.filter_by(name=school1_name,state_id=state_inst.id).first()
+        
+        if school_inst == None:
+            form_status = False
+            form.school_state.errors = ['School is not located in the state selected. Select state from dropdown list.']
+        
+            # update error message: 'school and state don't match'
+            # they can input the wrong state
+            # consider using try/except
+
+        elif major_inst not in school_inst.majors:
+            form_status = False
+            form.major1.errors = ['Major not available at selected school. Select available school from the dropdown list.']
+            test = 1
+
+
+        # if all inputs don't match
+        #  form status = False
+        # confirm states all match
+        # confirm error fields can still be accessed
+
+
+        test=1
         # return redirect('/search/results')
     
     # query database for majors and schools
-    if form.validate_on_submit():
+    if form_status:
 
         data = {}
 
@@ -204,7 +242,7 @@ def search_schools_majors():
         # form will have to accept multiple form values; may need a dynamic form if wanting to add multiple schools
 
         # have to loop through the number of form fields and add school ids to the list
-        user = User.query.get(session['user_id'])
+        user = User.query.filter_by(id=session['user_id']).first()
 
         home_state = user.states.name
     
@@ -416,7 +454,7 @@ def save_search_result():
     data = json.loads(request.data)
 
     if 'user_id' in session:
-        curr_user = User.query.get(session['user_id'])
+        curr_user = User.query.filter_by(id=session['user_id']).first()
 
 
         if data['check_status']:
@@ -522,7 +560,7 @@ def save_search_result():
             program_finance_id = data['program_finance_id']
             user_id = session['user_id']
 
-            program_finance = ProgramFinance.query.get(program_finance_id)
+            program_finance = ProgramFinance.query.filter_by(id=program_finance_id).first()
             # user_saved_query = UserQuerySave.query.filter_by(query_id=saved_query_id,user_id=user_id).first()
             # UserQuerySave(query_id=saved_query_id,user_id=user_id)
             db.session.delete(program_finance)
@@ -537,24 +575,60 @@ def save_search_result():
 
 
     return 'success'
+unique_major_titles = unique_major_titles
 
+# looks up majors in schools 
 @app.route('/API/findMajors', methods=['GET'])
 def find_majors_of_schools():
     if 'user_id' not in session:
         # flash message
         return redirect('/')
 
-    major_list = []
+    school_query = School.query
+
+    # major_title_list = []
     major_codes = []
+    all_majors = []
+    unique_search_majors = []
+
+    # unique_major_titles1 = unique_major_titles
 
     # get name from form
     # tag = request.form["tag"]
     textbox_val = request.args['school']
 
+    school_query = School.query.filter_by(name=textbox_val).all()
+    if len(school_query) > 2:
+        return 'Too many schools'
+
     if len(textbox_val) == 0:
-        school_list = School.query.all()
+        # query all major titles directly
+        major_list = []
+
+        all_majors = Major.query.all()
+
+        for major in all_majors:
+            major_list.append(major.title)
+
+        major_list.sort()
+
+        state_list = []
+        all_states = State.query.all()
+        
+        for state in all_states:
+            state_list.append(state.name)
+        
+        state_list.sort()
+
+        data = {
+            'type': 'all_majors',
+            'major_list': major_list,
+            'states_list': state_list
+        }
+        return jsonify(data)
 
     else:
+        # split word by spaces 
         # ensure first letter of the first word is capital so there will be a match in the database
         formated_text = textbox_val
 
@@ -563,19 +637,43 @@ def find_majors_of_schools():
 
         name = "%{}%".format(formated_text)
         school_list = School.query.filter(School.name.like(name)).all()
+    # don't loop through unless there is a match
+    if len(school_list) <= 3 and len(school_list) > 0:
+        # consider using every
+        for school in school_list:
+            # have to loop through bc school_list is from DB query
+            # don't have to loop through a schools majors
+            # can simply append a list of each school's major titles 
+            # unique_search_majors = unique_search_majors + school.majors
+            # unique_search_majors.append(school.)
+            for major in school.majors:
+                all_majors.append(major.title)
+        #     unique_search_majors.add(major.title)
+            # major_title_list.append(major.title)           
+            
+            # if major.majors.id not in major_codes:
+            #     # don't want duplicates
+            #     major_list.append(major.majors.title)
+            #     major_codes.append(major.majors.id)
+    # have to loop to extract in JS
 
-    for school in school_list:
-        for major in school.schools_majors:
-            if major.majors.id not in major_codes:
-                # don't want duplicates
-                major_list.append(major.majors.title)
-                major_codes.append(major.majors.id)
 
-    major_list.sort()
+    # major_title_list.sort()
 
-    data = {'major_list': major_list}
+        unique_search_majors = list(set(all_majors))
+        # unique_search_majors = list(unique_search_majors)
+        unique_search_majors.sort()
 
-    return jsonify(data)
+        data = {
+            'type': 'select',
+            'major_list': unique_search_majors
+            }
+
+        return jsonify(data)
+    else:
+        # No update at all
+        return 'Invalid school name'
+    
 
 
 
@@ -585,34 +683,73 @@ def find_schools_of_a_major():
         # flash message
         return redirect('/')
 
+    all_schools = []
     school_list = []
     school_ids = []
+    unique_school_names = []
 
-    # get name from form
-    # tag = request.form["tag"]
     textbox_val = request.args['major']
 
     if len(textbox_val) == 0:
-        major_list = Major.query.all()
+        all_schools = School.query.all()
+
+        for school in all_schools:
+            school_list.append(school.name)
+
+        school_list.sort()
+
+        state_list = []
+        all_states = State.query.all()
+        
+        for state in all_states:
+            state_list.append(state.name)
+        
+        state_list.sort()
+
+        data = {
+            'type': 'all_schools',
+            'school_list': school_list,
+            'states_list': state_list
+        }
+
+        return jsonify(data)
+
+
+    
+    name = "%{}%".format(textbox_val)
+    major_list = Major.query.filter(Major.title.like(name)).all()
+
+    if len(major_list) > 2:
+        return 'Too many majors'
 
     else:
-        name = "%{}%".format(textbox_val)
-        major_list = Major.query.filter(Major.title.like(name)).all()
+        state_list = []
+        for major in major_list:
+            for school in major.schools:
+                school_list.append(school.name)
+                state_list.append(school.states.name)
+                # if school.schools.id not in school_ids:
+                #     # don't want duplicates
+                #     school_list.append(school.schools.name)
+                #     school_ids.append(school.schools.id)
 
-    for major in major_list:
-        for school in major.schools_majors:
-            if school.schools.id not in school_ids:
-                # don't want duplicates
-                school_list.append(school.schools.name)
-                school_ids.append(school.schools.id)
 
-    school_list.sort()
 
-    data = {'school_list': school_list}
+        unique_school_names = list(set(school_list))
+        unique_state_names = list(set(state_list))
+        
+        unique_school_names.sort()
+        unique_state_names.sort()
 
-    test = 1
+        data = {
+            'type': 'selected',
+            'school_list': unique_school_names,
+            'state_list': unique_state_names
+            }
 
-    return jsonify(data)
+        test = 1
+
+        return jsonify(data)
 
 def call_college_API(school_id,major_id,credential_id,state,household_income):
         data = {}

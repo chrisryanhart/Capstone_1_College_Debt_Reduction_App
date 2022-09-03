@@ -96,7 +96,7 @@ async function updateMajorList(e){
   e.preventDefault();
   console.log('entered update major list')
   
-  if ($schoolInput.val().length === 0 || $schoolInput.val().length > 4){
+  if ($schoolInput.val().length === 0 || $schoolInput.val().length > 10){
     let resp = await axios({
       method: 'get',
       url: 'http://localhost:5000/API/findMajors',
@@ -120,16 +120,27 @@ async function updateMajorList(e){
 };
 
 function updateMajorOptions(data){
-  $schoolDatalist.empty()
+  $majorDatalist.empty()
 
   // $('#selectBox').append($('<option>').val(item).text(optionText))
+  if (data.type === 'all_majors'){
+      for (const item of data.major_list){
+        $newOption = $("<option>");
+        $newOption.val(item);
+    
+        $majorDatalist.append($newOption);
+        // $newOption.val() = 
+      }
+      console.log('finished all_majors loop')
+  } else if (data.type === 'select'){
+      for (const item of data.major_list){
+        $newOption = $("<option>");
+        $newOption.val(item)
+    
+        $majorDatalist.append($newOption);
+        // $newOption.val() = 
+      }
 
-  for (const item of data.major_list){
-    $newOption = $("<option>");
-    $newOption.val(item)
-
-    $schoolDatalist.append($newOption);
-    // $newOption.val() = 
   }
   
   const test =1;
@@ -172,4 +183,9 @@ function updateSchoolOptions(data){
 $('#save_search').on("click", saveSearch);
 
 $schoolInput.on("keyup", updateMajorList);
+$schoolInput.on('click',updateMajorList)
 $majorInput.on('keyup', updateSchoolList);
+
+// $majorInput.on('click', updateMajorList);
+
+// $schoolInput.on("focusout", updateMajorList);
