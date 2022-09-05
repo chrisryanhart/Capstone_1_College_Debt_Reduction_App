@@ -3,6 +3,8 @@ $schoolInput = $('#school1');
 $majorDatalist = $('#major1-list');
 $majorInput = $('#major1');
 $schoolDatalist = $('#school1-list');
+$stateInput = $('#school_state');
+$stateDatalist = $('#school_state-list');
 
 // allow user to sort search results
 async function saveSearch(e){
@@ -121,33 +123,34 @@ async function updateMajorList(e){
 
 function updateMajorOptions(data){
   $majorDatalist.empty()
+  $stateDatalist.empty()
 
   // $('#selectBox').append($('<option>').val(item).text(optionText))
-  if (data.type === 'all_majors'){
-      for (const item of data.major_list){
-        $newOption = $("<option>");
-        $newOption.val(item);
-    
-        $majorDatalist.append($newOption);
-        // $newOption.val() = 
-      }
-      console.log('finished all_majors loop')
-  } else if (data.type === 'select'){
-      for (const item of data.major_list){
-        $newOption = $("<option>");
-        $newOption.val(item)
-    
-        $majorDatalist.append($newOption);
-        // $newOption.val() = 
-      }
+  for (const item of data.major_list){
+    $newOption = $("<option>");
+    $newOption.val(item)
 
+    $majorDatalist.append($newOption);
+    // $newOption.val() = 
   }
-  
-  const test =1;
 
-  // <option value="Cell/Cellular Biology and Anatomical Sciences.">
-                
-  //                   </option>
+  for (const item of data.state_list){
+    $newOption = $("<option>");
+    $newOption.val(item)
+
+    $stateDatalist.append($newOption);
+  }
+  // if (data.type === 'all_majors'){
+  //     for (const item of data.major_list){
+  //       $newOption = $("<option>");
+  //       $newOption.val(item);
+    
+  //       $majorDatalist.append($newOption);
+  //       // $newOption.val() = 
+  //     }
+  //     console.log('finished all_majors loop')
+  // } else if (data.type === 'select'){
+  // }
 
 };
 
@@ -170,7 +173,8 @@ async function updateSchoolList(e){
 };
 
 function updateSchoolOptions(data){
-  $schoolDatalist.empty()
+  $schoolDatalist.empty();
+  $stateDatalist.empty();
 
   for (const item of data.school_list){
     $newOption = $("<option>");
@@ -178,13 +182,65 @@ function updateSchoolOptions(data){
 
     $schoolDatalist.append($newOption);
   }
+
+  for (const item of data.state_list){
+    $newOption = $("<option>");
+    $newOption.val(item)
+
+    $stateDatalist.append($newOption);
+  }
+
 };
+
+async function processStateInput(e){
+  e.preventDefault();
+
+  if ($stateInput.val().length === 0 || $stateInput.val().length === 2){
+    let resp = await axios({
+      method: 'get',
+      url: 'http://localhost:5000/API/processStateInput',
+      params: {
+        major: `${$majorInput.val()}`,
+      }
+
+    });
+
+    const data = resp.data
+    updateSchoolOptions(data)
+  }
+};
+
+function updateSchoolOptions(data){
+  $schoolDatalist.empty();
+  // update the major list instead
+  $stateDatalist.empty();
+
+  for (const item of data.school_list){
+    $newOption = $("<option>");
+    $newOption.val(item)
+
+    $schoolDatalist.append($newOption);
+  }
+
+  for (const item of data.state_list){
+    $newOption = $("<option>");
+    $newOption.val(item)
+
+    $stateDatalist.append($newOption);
+  }
+
+};
+
+
 
 $('#save_search').on("click", saveSearch);
 
 $schoolInput.on("keyup", updateMajorList);
 $schoolInput.on('click',updateMajorList)
+
 $majorInput.on('keyup', updateSchoolList);
+
+$stateInput.on('keyup',processStateInput)
 
 // $majorInput.on('click', updateMajorList);
 

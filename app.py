@@ -623,7 +623,7 @@ def find_majors_of_schools():
         data = {
             'type': 'all_majors',
             'major_list': major_list,
-            'states_list': state_list
+            'state_list': state_list
         }
         return jsonify(data)
 
@@ -640,12 +640,14 @@ def find_majors_of_schools():
     # don't loop through unless there is a match
     if len(school_list) <= 3 and len(school_list) > 0:
         # consider using every
+        state_list = []
         for school in school_list:
             # have to loop through bc school_list is from DB query
             # don't have to loop through a schools majors
             # can simply append a list of each school's major titles 
             # unique_search_majors = unique_search_majors + school.majors
             # unique_search_majors.append(school.)
+            state_list.append(school.states.name)
             for major in school.majors:
                 all_majors.append(major.title)
         #     unique_search_majors.add(major.title)
@@ -659,14 +661,16 @@ def find_majors_of_schools():
 
 
     # major_title_list.sort()
-
+        unique_states = list(set(state_list))
         unique_search_majors = list(set(all_majors))
         # unique_search_majors = list(unique_search_majors)
         unique_search_majors.sort()
+        unique_states.sort()
 
         data = {
             'type': 'select',
-            'major_list': unique_search_majors
+            'major_list': unique_search_majors,
+            'state_list': unique_states
             }
 
         return jsonify(data)
@@ -709,7 +713,7 @@ def find_schools_of_a_major():
         data = {
             'type': 'all_schools',
             'school_list': school_list,
-            'states_list': state_list
+            'state_list': state_list
         }
 
         return jsonify(data)
@@ -750,6 +754,88 @@ def find_schools_of_a_major():
         test = 1
 
         return jsonify(data)
+
+@app.route('/API/processStateInput',methods=['GET'])
+def process_state_input():
+    # process school and major
+
+    if 'user_id' not in session:
+        # flash message
+        return redirect('/')
+
+    # state_input = State.query.
+
+    all_states = []
+    state_list = []
+    school_list = []
+    school_ids = []
+    unique_school_names = []
+
+    textbox_val = request.args['school_state']
+
+    if len(textbox_val) == 0:
+        # update all majors/schools
+        all_states = State.query.all()
+
+        for state in all_states:
+            state_list.append(state.name)
+
+        state_list.sort()
+
+        # state_list = []
+        # all_states = State.query.all()
+        
+        for state in all_states:
+            state_list.append(state.name)
+        
+        state_list.sort()
+
+        data = {
+            'type': 'all_schools',
+            'school_list': school_list,
+            'state_list': state_list
+        }
+
+        return jsonify(data)
+
+
+    
+    name = "%{}%".format(textbox_val)
+    major_list = Major.query.filter(Major.title.like(name)).all()
+
+    if len(major_list) > 2:
+        return 'Too many majors'
+
+    else:
+        state_list = []
+        for major in major_list:
+            for school in major.schools:
+                school_list.append(school.name)
+                state_list.append(school.states.name)
+                # if school.schools.id not in school_ids:
+                #     # don't want duplicates
+                #     school_list.append(school.schools.name)
+                #     school_ids.append(school.schools.id)
+
+
+
+        unique_school_names = list(set(school_list))
+        unique_state_names = list(set(state_list))
+        
+        unique_school_names.sort()
+        unique_state_names.sort()
+
+        data = {
+            'type': 'selected',
+            'school_list': unique_school_names,
+            'state_list': unique_state_names
+            }
+
+        test = 1
+
+        return jsonify(data)
+
+    return
 
 def call_college_API(school_id,major_id,credential_id,state,household_income):
         data = {}
