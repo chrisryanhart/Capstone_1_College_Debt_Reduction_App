@@ -1,51 +1,59 @@
 {% extends 'index.html' %}
 
 {% block links %}
-    <li><a href="/logout">Logout</a> <link rel="stylesheet" href=""></li>
-    <li><a href="/search">New Search</a> <link rel="stylesheet" href=""></li>
-    <li><a href="/userProfile">Edit Profile</a> <link rel="stylesheet" href=""></li>
-{% endblock %}
+<li class="nav-item">
+    <a class="nav-link" href="/search">New Search</a> <link rel="stylesheet" href="">
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="/userProfile">Edit Profile</a> <link rel="stylesheet" href="">
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="/logout">Logout</a> <link rel="stylesheet" href="">
+</li>{% endblock %}
 
 {% block content %}
 
 <!-- single search results -->
-<div id="search">
-    <table>
-        <tr>
-            <th>College:</th>
-            <th>State:</th>
-            <th>Major:</th>
-            <th>Degree Type:</th>
-            <th style="display: none;">Household Income:</th>
-            <th style="display: none;">Home State:</th>
-            <th>Tuition Type:</th>
-            <th>Annual Cost:</th>
-            <th>Year 1 Earnings Post-Graduation:</th>
-            <th>Year 2 Earnings Post-Graduation:</th>
-            <th>Year 3 Earnings Post-Graduation:</th>
-            <th>Search Saved</th>
-        </tr>
-        <tr>
-            <td><input id="school" type="text" value="{{data.school}}"></td>
-            <td><input id="school-state" type="text" value="{{data.school_state}}"></td>
-            <td><input id="major" type="text" value="{{data.major}}"></td>
-            <td><input id="degree" type="text" value="{{data.degree}}"></td>
-            <td style="display: none;"><input id='HH-income' type="text" value="{{data.household_income}}"></td>
-            <td style="display: none;"><input id="home-state" type="text" value="{{data.state}}"></td>
-            <td><input id="tuition-type" type="text" value="{{data.tuition_type}}"></td>
-            <td>$<input id="cost" type="number" value="{{data.tuition}}"></td>
-            <td>$<input id="income-year1" type="number" value="{{data.yr_1_earnings}}"></td>
-            <td>$<input id="income-year2" type="number" value="{{data.yr_2_earnings}}"></td>
-            <td>$<input id="income-year3" type="number" value="{{data.yr_3_earnings}}"></td>
-            <td><label for="saved"><input type="checkbox" id="save_search" name="saved"></label></td>            
-        </tr>
+<div id="search" class="table-responsive">
+    <table class="table-sm table table-striped table-bordered" id="API-results">
+        <thead>
+            <tr class="table-warning">
+                <th style="width: 400px;" class="college-width">College:</th>
+                <th class="state-width">State:</th>
+                <th class="major-width">Major:</th>
+                <th style="display: none;">Degree Type:</th>
+                <th style="display: none;">Household Income:</th>
+                <th style="display: none;">Home State:</th>
+                <th class="tuitionType-width">Tuition Type:</th>
+                <th class="cost-width">Annual Cost:</th>
+                <th class="salary-width">Year 1 Salary:</th>
+                <th class="salary-width">Year 2 Salary:</th>
+                <th class="salary-width">Year 3 Salary:</th>
+                <th class="save-search">Search Saved</th>
+            </tr>            
+        </thead>
+        <tbody class="table-group-divider">
+            <tr>
+                <td class="college-width"><input disabled class="college-width" id="school" type="text" value="{{data.school}}"></td>
+                <td class="state-width"><input disabled class="state-width" id="school-state" type="text" value="{{data.school_state}}"></td>
+                <td class="major-width"><input class="major-width" id="major" type="text" value="{{data.major}}"></td>
+                <td style="display: none;"><input id="degree" type="text" value="{{data.degree}}"></td>
+                <td style="display: none;"><input id='HH-income' type="text" value="{{data.household_income}}"></td>
+                <td style="display: none;"><input id="home-state" type="text" value="{{data.state}}"></td>
+                <td class="tuitionType-width"><input disabled class="tuitionType-width" id="tuition-type" type="text" value="{{data.tuition_type}}"></td>
+                <td class="cost-width">$<input disabled class="cost-width" id="cost" type="number" value="{{data.tuition}}"></td>
+                <td class="salary-width">$<input disabled class="salary-width" id="income-year1" type="number" value="{{data.yr_1_earnings}}"></td>
+                <td class="salary-width">$<input disabled class="salary-width" id="income-year2" type="number" value="{{data.yr_2_earnings}}"></td>
+                <td class="salary-width">$<input disabled class="salary-width" id="income-year3" type="number" value="{{data.yr_3_earnings}}"></td>
+                <td class="save-search"><label class="save-search" for="saved"><input type="checkbox" id="save_search" name="saved"></label></td>            
+            </tr>
+        </tbody>
     </table>
     {% for field in form if field.widget.type != 'hidden' %}
         {% for error in field.errors %}
             {{error}}
         {% endfor %}
     {% endfor %}
-
 </div>
 
 {% endblock %}

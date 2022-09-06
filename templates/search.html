@@ -1,9 +1,15 @@
 {% extends 'index.html' %}
 
 {% block links %}
-    <li><a href="/logout">Logout</a> <link rel="stylesheet" href=""></li>
-    <li><a href="/search">New Search</a> <link rel="stylesheet" href=""></li>
-    <li><a href="/userProfile">Edit Profile</a> <link rel="stylesheet" href=""></li>
+    <li class="nav-item">
+        <a class="nav-link" href="/search">New Search</a> <link rel="stylesheet" href="">
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/userProfile">Edit Profile</a> <link rel="stylesheet" href="">
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/logout">Logout</a> <link rel="stylesheet" href="">
+    </li>
 {% endblock %}
 
 {% block content %}
@@ -15,16 +21,20 @@
 
     {% for field in form if field.widget.type != 'hidden' %}
         {% if field.label.text == "Major:" %}
-            <p>
-                {{field.label}}
-                {{field(list=field.name + "-list")}}
-    
+            <div class="row mb-3">
+                {{field.label(class_="col-1 form-label")}}
+                <div class="col-8">
+                    {{field(list=field.name + "-list", class_="form-control")}}
                     <datalist id="{{field.name}}-list">
                         {% for major in majors %}
                             <option value="{{major.title}}">
                         {% endfor %}
                     </datalist>
-            </p>
+                </div>
+    
+            </div>
+
+            
 
             <p>
                 {% for error in field.errors %}
@@ -34,17 +44,18 @@
 
         {% elif field.label.text == "College:" %}
 
-            <p>
-                {{field.label}}
-                {{field(list=field.name + "-list")}}
+            <div class="row mb-3">
+                {{field.label(class_="col-1 form-label")}}
+                <div class="col-8">
+                    {{field(list=field.name + "-list",class_="form-control")}}
     
                     <datalist id="{{field.name}}-list">
                         {% for school in schools %}
                             <option value="{{school.name}}">
                         {% endfor %}
                     </datalist>
-            </p>
-
+                </div>
+            </div>
             <p>
                 {% for error in field.errors %}
                     {{error}}
@@ -53,52 +64,35 @@
 
         
         {% elif field.label.text == 'State:' %}
-                
-            {{field.label}}
-            {{field(list=field.name + "-list")}}
+            <div class="row mb-3">
+                {{field.label(class_="col-1 form-label")}}
+                <div class="col-2">
+                    {{field(list=field.name + "-list",class_="form-control")}}
+    
+                    <datalist id="{{field.name}}-list">
+                        {% for state in states %}
+                            <option value="{{state.name}}">
+                        {% endfor %}
+                    </datalist>
+                </div>
 
-                <datalist id="{{field.name}}-list">
-                    {% for state in states %}
-                        <option value="{{state.name}}">
-                    {% endfor %}
-                </datalist>
+            </div>    
+
             <p>
                 {% for error in field.errors %}
                     {{error}}
                 {% endfor %}
             </p>
 
-        {% else %}
-            <p>
-                {{field.label}}
-                {{field}}
-            </p>
-            <p>
-                {% for error in field.errors %}
-                    {{error}}
-                {% endfor %}
-            </p>
+
         {% endif %}
 
     {% endfor %}
-  
-
-
-    <!-- <label for="band">Favorite Band: </label>
-    <input type="text" id="band"> -->
-
-    <!-- <label for="ice-cream-choice">Choose a flavor:</label>
-    <input list="ice-cream-flavors" id="ice-cream-choice" name="ice-cream-choice" /> -->
-    
-
 
     <div>
         <button>Search</button>
     </div>
-    <!-- <label for="username">Username:</label>
-    <input name="username" placeholder="Enter username" type="text">
-    <label for="password">Password:</label>
-    <input name="password" type="password" placeholder="Enter password"> -->
+
 </form>
 
 {% endblock %}

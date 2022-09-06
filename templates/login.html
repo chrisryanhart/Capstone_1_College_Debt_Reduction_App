@@ -2,21 +2,28 @@
 
 {% block content %}
 
-<p>Enter Login Information Below</p>
+
 
 <form action="/login" method="post">
+    <p>Enter Login Information Below</p>
     {{form.hidden_tag()}}
 
-    {% for field in form if field.widget.type != 'hidden' %}
-        <p>
-            {{field.label}}
-            {{field}}
+    {% for field in form 
+        if field.widget.type != 'hidden' %}
+            <div class="row mb-3">
+                {{field.label(class_="col-1 col-form-label")}}
+                <div class="col-6">
+                    {{field(class_="form-control")}}
+                </div>
+            </div>
 
             {% for error in field.errors %}
                 {{error}}
             {% endfor %}
-        </p>
+        
     {% endfor %}
+
+
     <div>
         <button>Login</button>
     </div>

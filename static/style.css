@@ -1,0 +1,163 @@
+th {
+    text-align: left;
+}
+
+div#saved-queries {
+    padding: 3rem 0;
+    /* background-color: orange; */
+}
+
+div#search {
+    padding: 3rem 0;
+}
+
+
+table {
+    margin: 0 auto;
+    border-spacing: 0;
+}
+
+textarea {
+    color: black;
+}
+
+input { 
+    border: none; 
+    background-color: transparent;
+    color: black;
+    /* width: 100%; */
+    /* width: 30px; */
+}
+
+#API-results input .major-width {
+    width: 400px;
+    color: blue;
+}
+
+input.state-width {
+    width: 30px;
+    border: none;
+}
+
+input.college-width {
+    width: 470px;
+}
+
+input.major-width {
+    width: 500px;
+}
+
+form {
+    width: 95%;
+    display: inline-block;
+    padding-left: 10px;
+}
+
+/* label {
+    min-width: 100px;
+    padding-left: 10px;
+} */
+
+/* input.major-width {
+    width: 500px;
+
+} */
+
+/* input {
+    border: none;
+    background-color: transparent;
+    min-width: 100%;
+    /* width: 10px; */
+/* } */ 
+
+
+nav {
+    background-color: rgb(134, 240, 249);
+    border-bottom: 1em;
+}
+
+textarea {
+    background-color: transparent;
+    border: none;
+    height: 100%;
+}
+
+table#API-results {
+    width: 1440px;
+}
+
+label.save-search{
+    width: 10px;
+}
+
+/* .save-search {
+    width: 10px;
+} */
+
+table#saved-results {
+    /* table-layout: fixed; */
+    width: 1440px;
+}
+.state-width { 
+    column-width: 10x; 
+    border: 1px solid black;
+    /* overflow: visible; */
+}
+.college-width {
+    column-width: 570px;
+}
+.major-width {
+    column-width: 400px;
+}
+
+.tuitionType-width {
+    column-width: 100px;
+}
+
+.salary-width {
+    column-width: 70px;
+}
+
+.cost-width {
+    column-width: 70px;
+}
+/* td {
+    display: table-cell;
+} */
+
+/* th, td {
+    column-width: 500px;
+} */
+
+/* td {
+    word-wrap: break-word;
+} */
+
+/* input {
+    word-wrap: break-word;
+} */
+
+
+tbody {
+    background-color: rgba(236, 236, 236, 0.92);
+}
+
+body.main {
+    background-color: rgb(233, 254, 233);
+}
+
+
+
+
+table.table-bordered > thead > tr > th {
+    border:1px solid black;
+  }
+
+table.table-bordered {
+    border:1px solid black;
+  }
+ 
+.table-striped>tbody>tr:nth-child(odd)>td, 
+.table-striped>tbody>tr:nth-child(odd)>th {
+   background-color: rgba(208, 208, 208, 0.984);
+}

@@ -1,34 +1,44 @@
 {% extends 'index.html' %}
 
 {% block links %}
-    <li><a href="/logout">Logout</a> <link rel="stylesheet" href=""></li>
-    <li><a href="/search">New Search</a> <link rel="stylesheet" href=""></li>
-    <li><a href="/userProfile">Edit Profile</a> <link rel="stylesheet" href=""></li>
+    <li class="nav-item">
+        <a class="nav-link" href="/search">New Search</a> <link rel="stylesheet" href="">
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/userProfile">Edit Profile</a> <link rel="stylesheet" href="">
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/logout">Logout</a> <link rel="stylesheet" href="">
+    </li>
 {% endblock %}
 
 {% block content %}
 
-<p>Made it to user profile</p>
 <form action="" method="post">
+    <h4>Edit user profile:</h4> 
     {{form.hidden_tag()}}
 
     {% for field in form if field.widget.type != 'hidden' %}
-        <p>
-            {{field.label}}
-            {{field}}
+        <div class="row mb-3">
+            {{field.label(class_="col-1 col-form-label")}}
+            <div class="col-8">
+                {{field(class_="form-control")}}
+            </div>
+        </div>
 
-            {% for error in field.errors %}
-                {{error}}
-            {% endfor %}
-        </p>
+        {% for error in field.errors %}
+            {{error}}
+        {% endfor %}
     {% endfor %}
     
-    <p>
+
+
+    <!-- <p>
         Confirm password: <input name="password" type="password">
-    </p>
+    </p> -->
 
     <div>
-        <button>Modify User</button>
+        <button>Update Profile</button>
     </div>
     <!-- <label for="username">Username:</label>
     <input name="username" placeholder="Enter username" type="text">
