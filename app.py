@@ -1,7 +1,7 @@
 from crypt import methods
 from logging import exception
 
-from flask import Flask, render_template, request, jsonify, g, redirect, session
+from flask import Flask, render_template, request, jsonify, g, redirect, session, flash
 from flask_bcrypt import Bcrypt
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_wtf import FlaskForm
@@ -21,6 +21,7 @@ CURR_USER_KEY = "curr_user"
 # https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/NaPali_overlook_Kalalau_Valley.jpg/1024px-NaPali_overlook_Kalalau_Valley.jpg
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
@@ -78,7 +79,11 @@ def create_new_user():
     if form.validate_on_submit():
 
         username = request.form['username']
+
+        # encrypt plain text password
         password = request.form['password']
+        pw_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+
         state = request.form['state']
         household_income = request.form['household_income']
 
@@ -87,8 +92,7 @@ def create_new_user():
 
         # convert password with bcrypt
         # store new user/password in db
-
-        user = User(username=username, password=password, home_state_id=state_inst.id, household_income_id=household_income_inst.id)
+        user = User(username=username, password=pw_hash, home_state_id=state_inst.id, household_income_id=household_income_inst.id)
 
         db.session.add(user)
         db.session.commit()
@@ -98,14 +102,15 @@ def create_new_user():
         # add user to the global var
         
         return redirect('/')
+    
+    states = State.query.all()
 
 
-    return render_template('signup.html',form=form)
+    return render_template('signup.html',form=form, states=states)
 
 @app.route('/userProfile',methods=['GET','POST'])
 def edit_user():
 
-    user = User.query.filter_by(id=session['user_id']).first()
 
     form = EditUserForm()
 
@@ -114,7 +119,21 @@ def edit_user():
         username = request.form['username']
         home_state = request.form['state']
         household_income = request.form['household_income']
-        password = request.form['password']
+
+        user = User.query.filter_by(username=username).first()
+
+        if user == None:
+            flash('Invalid username')
+            return redirect('/userProfile')
+
+        password_candidate = request.form['password']
+        hashed_pw = user.password
+
+        password_check = bcrypt.check_password_hash(hashed_pw,password_candidate)
+
+        if not password_check:
+            flash('Username/password combination incorrect')
+            return redirect('/userProfile')
 
         home_state_inst = State.query.filter_by(name=home_state).first()
         home_state_id = home_state_inst.id
@@ -122,30 +141,30 @@ def edit_user():
         household_income_inst = HouseholdIncome.query.filter_by(household_income=household_income).first()
         household_income_id = household_income_inst.id
 
-        # don't allow user to modify username
 
-        # use bcrypt to store password
-        if password == user.password:
-
-            user.home_state_id = home_state_id
-            user.household_income_id = household_income_id
+        user.home_state_id = home_state_id
+        user.household_income_id = household_income_id
             
             # user_update = User(id=user.id,username=username,password=password, home_state_id=home_state_id,household_income_id=household_income_id)
-            db.session.add(user)
-            db.session.commit()
+        db.session.add(user)
+        db.session.commit()
 
         # update database with username information
 
         return redirect('/')
 
+    states = State.query.all()
+
     # autofill form data 
     # form.choices['username']
+    user = User.query.filter_by(id=session['user_id']).first()
+
 
     form.username.data = user.username
     form.state.data = user.states.name
     form.household_income.data = user.household_incomes.household_income
 
-    return render_template('editUser.html',form=form)
+    return render_template('editUser.html',form=form, states=states)
 
 
 @app.route('/logout')
@@ -159,16 +178,29 @@ def logout_user():
 @app.route('/login', methods=["GET","POST"])
 def login_user():
 
-    # provide login form
-
     form = LoginForm()
     
     if form.validate_on_submit():
 
         username = request.form['username']
-        password = request.form['password']
+        password_candidate = request.form['password']
+
 
         user = User.query.filter_by(username=username).first()
+
+        if user == None:
+            flash('Invalid username')
+            return redirect('/login')
+
+        hashed_pw = user.password
+
+        password_check = bcrypt.check_password_hash(hashed_pw,password_candidate)
+
+        if not password_check:
+            flash('Username/password combination incorrect')
+            return redirect('/login')
+
+        
 
         session['user_id'] = user.id
         
@@ -336,6 +368,15 @@ def search_schools_majors():
         yr_1_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['1_yr']['overall_median_earnings']
         yr_2_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['2_yr']['overall_median_earnings']
         yr_3_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['3_yr']['overall_median_earnings']
+
+        if not yr_1_earnings or yr_1_earnings < 0:
+            yr_1_earnings = 'No data available'
+
+        if not yr_2_earnings or yr_2_earnings < 0:
+            yr_2_earnings = 'No data available'
+
+        if not yr_3_earnings or yr_3_earnings < 0:
+            yr_3_earnings = 'No data available'
 
         data['yr_1_earnings'] = yr_1_earnings
         data['yr_2_earnings'] = yr_2_earnings
@@ -755,87 +796,87 @@ def find_schools_of_a_major():
 
         return jsonify(data)
 
-@app.route('/API/processStateInput',methods=['GET'])
-def process_state_input():
-    # process school and major
+# @app.route('/API/processStateInput',methods=['GET'])
+# def process_state_input():
+#     # process school and major
 
-    if 'user_id' not in session:
-        # flash message
-        return redirect('/')
+#     if 'user_id' not in session:
+#         # flash message
+#         return redirect('/')
 
-    # state_input = State.query.
+#     # state_input = State.query.
 
-    all_states = []
-    state_list = []
-    school_list = []
-    school_ids = []
-    unique_school_names = []
+#     all_states = []
+#     state_list = []
+#     school_list = []
+#     school_ids = []
+#     unique_school_names = []
 
-    textbox_val = request.args['school_state']
+#     textbox_val = request.args['school']
 
-    if len(textbox_val) == 0:
-        # update all majors/schools
-        all_states = State.query.all()
+#     if len(textbox_val) == 0:
+#         # update all majors/schools
+#         all_states = State.query.all()
 
-        for state in all_states:
-            state_list.append(state.name)
+#         for state in all_states:
+#             state_list.append(state.name)
 
-        state_list.sort()
+#         state_list.sort()
 
-        # state_list = []
-        # all_states = State.query.all()
+#         # state_list = []
+#         # all_states = State.query.all()
         
-        for state in all_states:
-            state_list.append(state.name)
+#         for state in all_states:
+#             state_list.append(state.name)
         
-        state_list.sort()
+#         state_list.sort()
 
-        data = {
-            'type': 'all_schools',
-            'school_list': school_list,
-            'state_list': state_list
-        }
+#         data = {
+#             'type': 'all_schools',
+#             'school_list': school_list,
+#             'state_list': state_list
+#         }
 
-        return jsonify(data)
+#         return jsonify(data)
 
 
     
-    name = "%{}%".format(textbox_val)
-    major_list = Major.query.filter(Major.title.like(name)).all()
+#     name = "%{}%".format(textbox_val)
+#     major_list = Major.query.filter(Major.title.like(name)).all()
 
-    if len(major_list) > 2:
-        return 'Too many majors'
+#     if len(major_list) > 2:
+#         return 'Too many majors'
 
-    else:
-        state_list = []
-        for major in major_list:
-            for school in major.schools:
-                school_list.append(school.name)
-                state_list.append(school.states.name)
-                # if school.schools.id not in school_ids:
-                #     # don't want duplicates
-                #     school_list.append(school.schools.name)
-                #     school_ids.append(school.schools.id)
+#     else:
+#         state_list = []
+#         for major in major_list:
+#             for school in major.schools:
+#                 school_list.append(school.name)
+#                 state_list.append(school.states.name)
+#                 # if school.schools.id not in school_ids:
+#                 #     # don't want duplicates
+#                 #     school_list.append(school.schools.name)
+#                 #     school_ids.append(school.schools.id)
 
 
 
-        unique_school_names = list(set(school_list))
-        unique_state_names = list(set(state_list))
+#         unique_school_names = list(set(school_list))
+#         unique_state_names = list(set(state_list))
         
-        unique_school_names.sort()
-        unique_state_names.sort()
+#         unique_school_names.sort()
+#         unique_state_names.sort()
 
-        data = {
-            'type': 'selected',
-            'school_list': unique_school_names,
-            'state_list': unique_state_names
-            }
+#         data = {
+#             'type': 'selected',
+#             'school_list': unique_school_names,
+#             'state_list': unique_state_names
+#             }
 
-        test = 1
+#         test = 1
 
-        return jsonify(data)
+#         return jsonify(data)
 
-    return
+#     return
 
 def call_college_API(school_id,major_id,credential_id,state,household_income):
         data = {}

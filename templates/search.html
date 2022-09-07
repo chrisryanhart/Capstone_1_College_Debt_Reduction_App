@@ -14,14 +14,15 @@
 
 {% block content %}
 
-<p>Ready to start a new search</p>
+
 
 <form action="/search" method="post">
+    <h4>Start new search:</h4>
     {{form.hidden_tag()}}
 
-    {% for field in form if field.widget.type != 'hidden' %}
+    {% for field in form if field.widget.input_type != 'hidden' %}
         {% if field.label.text == "Major:" %}
-            <div class="row mb-3">
+            <div class="mb-3">
                 {{field.label(class_="col-1 form-label")}}
                 <div class="col-8">
                     {{field(list=field.name + "-list", class_="form-control")}}
@@ -44,7 +45,7 @@
 
         {% elif field.label.text == "College:" %}
 
-            <div class="row mb-3">
+            <div class="mb-3">
                 {{field.label(class_="col-1 form-label")}}
                 <div class="col-8">
                     {{field(list=field.name + "-list",class_="form-control")}}
@@ -64,7 +65,7 @@
 
         
         {% elif field.label.text == 'State:' %}
-            <div class="row mb-3">
+            <div class="mb-3">
                 {{field.label(class_="col-1 form-label")}}
                 <div class="col-2">
                     {{field(list=field.name + "-list",class_="form-control")}}
@@ -90,9 +91,19 @@
     {% endfor %}
 
     <div>
-        <button>Search</button>
+        <button class="btn btn-primary">Search</button>
     </div>
 
 </form>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for category, message in messages %}
+      <li class="{{ category }}">{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
 
 {% endblock %}

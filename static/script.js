@@ -240,7 +240,7 @@ $schoolInput.on('click',updateMajorList)
 
 $majorInput.on('keyup', updateSchoolList);
 
-$stateInput.on('keyup',processStateInput)
+// $stateInput.on('keyup',processStateInput)
 
 // $majorInput.on('click', updateMajorList);
 

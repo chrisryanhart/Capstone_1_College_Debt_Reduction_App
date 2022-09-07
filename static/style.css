@@ -1,3 +1,18 @@
+.flashes {
+    padding-top: 20px;
+}
+
+.welcome {
+    margin: auto;
+    width: 70%;
+    padding-top: 100px;
+    text-align: center;
+}
+.navbar-toggler {
+    border-color: white;
+    background-color: white;
+}
+
 th {
     text-align: left;
 }
@@ -53,10 +68,9 @@ form {
     padding-left: 10px;
 }
 
-/* label {
-    min-width: 100px;
-    padding-left: 10px;
-} */
+label {
+    white-space: normal;
+}
 
 /* input.major-width {
     width: 500px;

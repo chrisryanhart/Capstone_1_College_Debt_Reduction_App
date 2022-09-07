@@ -5,13 +5,13 @@
 
 
 <form action="/login" method="post">
-    <p>Enter Login Information Below</p>
+    <h4>Enter Login Information Below</h4>
     {{form.hidden_tag()}}
 
     {% for field in form 
-        if field.widget.type != 'hidden' %}
-            <div class="row mb-3">
-                {{field.label(class_="col-1 col-form-label")}}
+        if field.widget.input_type != 'hidden' %}
+            <div class=" mb-3">
+                {{field.label(class_="col-3 col-form-label")}}
                 <div class="col-6">
                     {{field(class_="form-control")}}
                 </div>
@@ -25,7 +25,7 @@
 
 
     <div>
-        <button>Login</button>
+        <button class="btn btn-primary">Login</button>
     </div>
 
     <!-- <label for="username">Username:</label>
@@ -37,5 +37,14 @@
     </div> -->
 </form>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for category, message in messages %}
+      <li class="{{ category }}">{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
 
 {% endblock %}

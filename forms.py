@@ -28,9 +28,9 @@ class AddUserForm(FlaskForm):
 
 class EditUserForm(FlaskForm):
     username = StringField('Username: ', validators=[DataRequired(),Length(min=4,max=25)])
-    state = StringField('State of Residency:', validators=[DataRequired(),AnyOf(states,message='Invalid state format. Select state from dropdown list')])
+    state = StringField('State of Residency:', validators=[DataRequired(),AnyOf(states, message='Invalid state name. Must select input from dropdown list')])
     household_income = SelectField('Household Income:', choices=incomes, validators=[DataRequired()])
-    password = PasswordField('Confirm Password: ', validators=[DataRequired()])
+    password = PasswordField('Confirm Password: ', validators=[DataRequired(),Length(min=4,max=25)])
 
 
 class LoginForm(FlaskForm):

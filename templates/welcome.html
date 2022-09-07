@@ -2,10 +2,17 @@
 
 {% block content %}
 
-<!-- could show demo here -->
-
-<p>Welcome to the College Saving App! <a href="/signup">Sign up</a> or <a href="/login">login</a> login to get started.
+<p class="welcome">Welcome to the College Saving App! <a href="/signup">Sign up</a> or <a href="/login">login</a> login to get started.
 </p>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for category, message in messages %}
+      <li class="{{ category }}">{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
 
 {% endblock %}

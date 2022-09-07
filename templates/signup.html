@@ -8,16 +8,27 @@
 
 <form action="" method="post">
     
-    <p>Sign up a new User</p>
+    <h4>Create new User:</h4>
 
     {{form.hidden_tag()}}
 
     {% for field in form 
         if field.widget.input_type != 'hidden' %}
-                <div class="row mb-3">
-                    {{field.label(class_="col-1 col-form-label")}}
+                <div class=" mb-3">
+                    {{field.label(class_="col-3 col-form-label")}}
                     <div class="col-6">
+                        <!-- {{field(class_="form-control")}} -->
+                    {% if field.label.text != 'State of Residency: '%}
                         {{field(class_="form-control")}}
+    
+                    {% elif field.label.text == 'State of Residency: '%}
+                        {{field(list=field.name + "-list",class_="form-control")}}
+                        <datalist id="{{field.name}}-list">
+                            {% for state in states %}
+                                <option value="{{state.name}}">
+                            {% endfor %}
+                        </datalist>
+                    {% endif %}
                     </div>
                 </div>
 
@@ -26,10 +37,18 @@
                 {% endfor %}
     {% endfor %}
     <div>
-        <button>Create User</button>
+        <button class="btn btn-primary">Create User</button>
     </div>
 </form>
 
-
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for category, message in messages %}
+      <li class="{{ category }}">{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
 
 {% endblock %}
