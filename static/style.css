@@ -135,6 +135,19 @@ table#saved-results {
 .cost-width {
     column-width: 70px;
 }
+
+input.salary-width {
+    position: auto;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    /* word-wrap: break-word; */
+}
+
+td {
+    position: relative;
+}
+
 /* td {
     display: table-cell;
 } */

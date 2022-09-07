@@ -135,6 +135,6 @@ db.session.add(tuition_type2)
 db.session.commit()
 
 # add 3rd type for private
-tuition_type3 = TuitionType(id=3,tuition_type='N/A')
+tuition_type3 = TuitionType(id=3,tuition_type='Private')
 db.session.add(tuition_type3)
 db.session.commit()

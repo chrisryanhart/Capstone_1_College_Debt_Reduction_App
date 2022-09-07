@@ -320,8 +320,15 @@ def search_schools_majors():
             
             total_out_of_state_cost = out_of_state_tuition + roomboard + books + misc_expense
 
+            if not total_out_of_state_cost or total_out_of_state_cost < 0:
+                total_out_of_state_cost = 'No data'
+            else:
+                total_out_of_state_cost = "${:0,}".format(total_out_of_state_cost) 
+
             data['tuition'] = total_out_of_state_cost
             data['tuition_type'] = 'Out-of-state'
+
+
 
 
         # include option to not accept student aid (in-state total cost without aid)
@@ -330,11 +337,24 @@ def search_schools_majors():
         # Verify school is private (not public)
         if ownership != 1:
             private_net_cost = cost_data['results'][0][f'latest.cost.net_price.private.by_income_level.{household_income}']
+
+            if not private_net_cost or private_net_cost < 0:
+                private_net_cost = 'No data'
+            else:
+                private_net_cost = "${:0,}".format(private_net_cost) 
+
+
             data['tuition'] = private_net_cost
-            data['tuition_type'] = 'N/A'
+            data['tuition_type'] = 'Private'
 
         if home_state == school_state and ownership == 1:
             net_in_state_public_cost = cost_data['results'][0][f'latest.cost.net_price.public.by_income_level.{household_income}']
+            
+            if not net_in_state_public_cost or net_in_state_public_cost < 0:
+                net_in_state_public_cost = 'No data'
+            else:
+                net_in_state_public_cost = "${:0,}".format(net_in_state_public_cost) 
+            
             data['tuition'] = net_in_state_public_cost
             data['tuition_type'] = 'In-state'
 
@@ -370,13 +390,19 @@ def search_schools_majors():
         yr_3_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['3_yr']['overall_median_earnings']
 
         if not yr_1_earnings or yr_1_earnings < 0:
-            yr_1_earnings = 'No data available'
+            yr_1_earnings = 'No data'
+        else:
+            yr_1_earnings = "${:0,}".format(yr_1_earnings) 
 
         if not yr_2_earnings or yr_2_earnings < 0:
-            yr_2_earnings = 'No data available'
+            yr_2_earnings = 'No data'
+        else:
+            yr_2_earnings = "${:0,}".format(yr_2_earnings) 
 
         if not yr_3_earnings or yr_3_earnings < 0:
-            yr_3_earnings = 'No data available'
+            yr_3_earnings = 'No data'
+        else:
+            yr_3_earnings = "${:0,}".format(yr_3_earnings) 
 
         data['yr_1_earnings'] = yr_1_earnings
         data['yr_2_earnings'] = yr_2_earnings
@@ -447,6 +473,11 @@ def show_saved_queries():
 
     return render_template('savedQueries.html', data=data)
 
+def convert_to_currency_format(amt):
+
+    "${:0,}".format(amt) 
+
+    return
 
 def retrieve_program_finances(program_finances):
     data = []
@@ -907,7 +938,7 @@ def call_college_API(school_id,major_id,credential_id,state,household_income):
         if ownership != 1:
             private_net_cost = cost_data['results'][0][f'latest.cost.net_price.private.by_income_level.{household_income}']
             data['tuition'] = private_net_cost
-            data['tuition_type'] = 'N/A'
+            data['tuition_type'] = 'Private'
 
         if state == school_state and ownership == 1:
             net_in_state_public_cost = cost_data['results'][0][f'latest.cost.net_price.public.by_income_level.{household_income}']
