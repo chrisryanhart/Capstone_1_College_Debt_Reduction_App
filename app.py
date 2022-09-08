@@ -478,7 +478,7 @@ def find_majors_of_schools():
         flash('No user logged in')
         return redirect('/')
 
-    school_query = School.query
+    # school_query = School.query
 
     major_codes = []
     all_majors = []
