@@ -98,6 +98,9 @@ def create_new_user():
 
 @app.route('/userProfile',methods=['GET','POST'])
 def edit_user():
+    if 'user_id' not in session:
+        flash('Must log in to edit a user!')
+        return redirect('/')
 
     form = EditUserForm()
 
@@ -135,6 +138,8 @@ def edit_user():
             
         db.session.add(user)
         db.session.commit()
+
+        flash('User profile updated!')
 
         return redirect('/')
 
@@ -214,8 +219,6 @@ def search_schools_majors():
         major_inst = Major.query.filter_by(title=major_title).first()
 
         state_inst = State.query.filter_by(name=school_state).first()
-
-        
         school_inst = School.query.filter_by(name=school1_name,state_id=state_inst.id).first()
         
         if school_inst == None:

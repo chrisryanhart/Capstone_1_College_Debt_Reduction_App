@@ -9,7 +9,7 @@ from unittest import TestCase
 from sqlalchemy import exc, orm
 from flask import session
 
-from models import db, connect_db, HouseholdIncome, ProgramFinance, TuitionType, User, School, Major, State
+from models import SchoolMajor, db, connect_db, HouseholdIncome, ProgramFinance, TuitionType, User, School, Major, State
 
 os.environ['DATABASE_URL'] = "postgresql:///college_app-test"
 
@@ -39,7 +39,13 @@ class CollegeAppViewsTestCase(TestCase):
         self.new_income = HouseholdIncome(household_income="0-30000")
         self.new_income_id = 1
         self.new_income.id = self.new_income_id
+
+        self.new_income2 = HouseholdIncome(household_income="30001-48000")
+        self.new_income2_id = 2
+        self.new_income2.id = self.new_income2_id
+
         db.session.add(self.new_income)
+        db.session.add(self.new_income2)
         db.session.commit()
 
         self.new_state1 = State(name='KY')
@@ -58,12 +64,34 @@ class CollegeAppViewsTestCase(TestCase):
         pw_hash = bcrypt.generate_password_hash('spants').decode('utf-8')
 
         self.new_user = User(username='spongebob',password=pw_hash,home_state_id=18,household_income_id=1)
-
+        
+        pw_hash2 = bcrypt.generate_password_hash('test').decode('utf-8')
+        self.new_user2 = User(username='testuser',password=pw_hash2,home_state_id=19,household_income_id=1)
 
         db.session.add(self.new_user)
+        db.session.add(self.new_user2)
         db.session.commit()
 
         self.new_user_id = self.new_user.id 
+        self.new_user2_id = self.new_user2.id
+
+        self.new_school = School(id='157085',name='University of Kentucky', state_id=18)
+        self.new_school_id = self.new_school.id
+
+        db.session.add(self.new_school)
+        db.session.commit()
+
+        self.new_major = Major(id='5203',title='Accounting and Related Services.')
+
+        db.session.add(self.new_major)
+        db.session.commit()
+
+        self.new_major_id = self.new_major.id
+
+        self.new_school_major = SchoolMajor(school_id='157085',major_id='5203')
+        db.session.add(self.new_school_major)
+        db.session.commit()
+
         
         # # add tuition types
         # tuition_type1 = TuitionType(id=1,tuition_type='In-state')
@@ -150,7 +178,82 @@ class CollegeAppViewsTestCase(TestCase):
             html = resp.get_data(as_text=True)
 
             self.assertIn('user_id',session)
+            # For new user, message below appears
             self.assertIn('<p>Add a new search above to compare outcomes between schools.</p>',html)
+            self.assertEqual(resp.status_code,200)
 
+    def test_edit_user_profile(self):
+        """Ensure user can edit profile"""
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess['user_id'] = self.new_user_id
 
+            resp = c.post('/userProfile', 
+                data={
+                'username':'spongebob',
+                'state': 'MA',
+                'household_income': "30001-48000",
+                'password':'spants',
+                },
+                follow_redirects=True)
+
+            html = resp.get_data(as_text=True)
+
+            edited_user = User.query.get(self.new_income_id)
+
+            self.assertEqual(edited_user.home_state_id,19)
+            self.assertEqual(edited_user.household_income_id,2)
+            self.assertIn('<li class="message">User profile updated!</li>',html)
+            self.assertEqual(resp.status_code,200)
+
+            # add some html check
     
+    def test_in_state_search_result(self):
+        """Test user search parameters"""
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess['user_id'] = self.new_user_id
+
+            resp = c.post('/search', 
+                data={
+                'major1':'Accounting and Related Services.',
+                'school1': 'University of Kentucky',
+                'school_state': "KY"
+                },
+                follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            # income
+            self.assertIn('id="income-year2" type="text" value="$50,000"></td>',html)
+            # In/out of state
+            self.assertIn('type="text" value="In-state"></td>',html)  
+            # tuition
+            self.assertIn('id="cost" type="text" value="$12,593"></td>',html)
+
+    def test_out_of_state_search_result(self):
+        """Test user search parameters"""
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess['user_id'] = self.new_user2_id
+
+            resp = c.post('/search', 
+                data={
+                'major1':'Accounting and Related Services.',
+                'school1': 'University of Kentucky',
+                'school_state': "KY"
+                },
+                follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            # income
+            self.assertIn('id="income-year3" type="text" value="$57,566"></td>',html)
+            # In/out of state
+            self.assertIn('id="tuition-type" type="text" value="Out-of-state"></td>',html)  
+            # tuition
+            self.assertIn('id="cost" type="text" value="$50,356"></td>',html)
+
+
+
+
+
+ 
