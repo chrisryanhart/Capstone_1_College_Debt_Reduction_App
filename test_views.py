@@ -368,7 +368,6 @@ class CollegeAppViewsTestCase(TestCase):
             test = 1
             self.assertEqual(len(all_schools),2)
             self.assertEqual(len(resp_data['school_list']),1)
-    # def test_API_update_major_list(self):
 
 
 

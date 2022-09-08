@@ -5,6 +5,7 @@ $majorInput = $('#major1');
 $schoolDatalist = $('#school1-list');
 $stateInput = $('#school_state');
 $stateDatalist = $('#school_state-list');
+$loaderContainers = $('.loader-container');
 
 // allow user to sort search results
 async function saveSearch(e){
@@ -239,6 +240,12 @@ $schoolInput.on("keyup", updateMajorList);
 $schoolInput.on('click',updateMajorList)
 
 $majorInput.on('keyup', updateSchoolList);
+
+$(window).on('load',hideLoader)
+
+function hideLoader(){
+  $loaderContainers.hide();
+}
 
 // $stateInput.on('keyup',processStateInput)
 

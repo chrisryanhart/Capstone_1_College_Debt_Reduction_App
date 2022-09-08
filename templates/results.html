@@ -13,6 +13,14 @@
 
 {% block content %}
 
+<div class="loader-container">
+    <div id="loader"></div>
+ 
+</div>
+<div class="loader-container">
+    <p class="loading-text">...loading</p>
+</div>
+
 <!-- single search results -->
 <div id="search" class="table-responsive">
     <table class="table-sm table table-striped table-bordered" id="API-results">
@@ -30,7 +38,6 @@
                 <th class="salary-width">Year 2 Salary:</th>
                 <th class="salary-width">Year 3 Salary:</th>
                 <th class="save-search">Search Saved</th>
-                <th></th>
             </tr>            
         </thead>
         <tbody class="table-group-divider">
