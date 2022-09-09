@@ -191,8 +191,7 @@ class CollegeAppViewsTestCase(TestCase):
             html = resp.get_data(as_text=True)
 
             self.assertIn('user_id',session)
-            # For new user, message below appears
-            self.assertIn('<p>Add a new search above to compare outcomes between schools.</p>',html)
+            self.assertIn('<p>Saved Search Summary:</p>',html)
             self.assertEqual(resp.status_code,200)
 
     def test_edit_user_profile(self):

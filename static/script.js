@@ -7,10 +7,9 @@ $stateInput = $('#school_state');
 $stateDatalist = $('#school_state-list');
 $loaderContainers = $('.loader-container');
 
-// allow user to sort search results
+// allow user to save search results
 async function saveSearch(e){
-    // e.preventDefault();
-    // e.stopPropogation();
+
     let isChecked = null;
 
     if ($searchSaveStatus.is(':checked')){
@@ -97,7 +96,6 @@ async function saveSearch(e){
 
 async function updateMajorList(e){
   e.preventDefault();
-  console.log('entered update major list')
   
   if ($schoolInput.val().length === 0 || $schoolInput.val().length > 10){
     let resp = await axios({
@@ -105,34 +103,27 @@ async function updateMajorList(e){
       url: 'http://localhost:5000/API/findMajors',
       params: {
         school: `${$schoolInput.val()}`,
-        // major: $major,
-        // degree: $degree,
-        // household_income: $household_income,
-        // home_state: $home_state,
-        // check_status: isChecked
       }
     });
 
     const data = resp.data;
-
+    if (data === 'No update required'){
+      return
+    };
+  
     updateMajorOptions(data);
-  }
-  else{
-    
-  }
+  };
 };
 
 function updateMajorOptions(data){
   $majorDatalist.empty()
   $stateDatalist.empty()
 
-  // $('#selectBox').append($('<option>').val(item).text(optionText))
   for (const item of data.major_list){
     $newOption = $("<option>");
     $newOption.val(item)
 
     $majorDatalist.append($newOption);
-    // $newOption.val() = 
   }
 
   for (const item of data.state_list){
@@ -141,17 +132,6 @@ function updateMajorOptions(data){
 
     $stateDatalist.append($newOption);
   }
-  // if (data.type === 'all_majors'){
-  //     for (const item of data.major_list){
-  //       $newOption = $("<option>");
-  //       $newOption.val(item);
-    
-  //       $majorDatalist.append($newOption);
-  //       // $newOption.val() = 
-  //     }
-  //     console.log('finished all_majors loop')
-  // } else if (data.type === 'select'){
-  // }
 
 };
 
@@ -168,7 +148,12 @@ async function updateSchoolList(e){
 
     });
 
+    // what about error?
     const data = resp.data
+    
+    if (data === 'No update required'){
+      return
+    }
     updateSchoolOptions(data)
   }
 };
@@ -193,27 +178,9 @@ function updateSchoolOptions(data){
 
 };
 
-async function processStateInput(e){
-  e.preventDefault();
-
-  if ($stateInput.val().length === 0 || $stateInput.val().length === 2){
-    let resp = await axios({
-      method: 'get',
-      url: 'http://localhost:5000/API/processStateInput',
-      params: {
-        major: `${$majorInput.val()}`,
-      }
-
-    });
-
-    const data = resp.data
-    updateSchoolOptions(data)
-  }
-};
 
 function updateSchoolOptions(data){
   $schoolDatalist.empty();
-  // update the major list instead
   $stateDatalist.empty();
 
   for (const item of data.school_list){
@@ -236,19 +203,16 @@ function updateSchoolOptions(data){
 
 $('#save_search').on("click", saveSearch);
 
+// event listener to update majors and school datalist options
 $schoolInput.on("keyup", updateMajorList);
-$schoolInput.on('click',updateMajorList)
-
 $majorInput.on('keyup', updateSchoolList);
 
-$(window).on('load',hideLoader)
+$(window).on('load',hideLoader);
 
 function hideLoader(){
   $loaderContainers.hide();
-}
+};
 
 // $stateInput.on('keyup',processStateInput)
 
 // $majorInput.on('click', updateMajorList);
-
-// $schoolInput.on("focusout", updateMajorList);

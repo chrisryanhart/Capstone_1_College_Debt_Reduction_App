@@ -17,11 +17,12 @@
 
 
 <form action="/search" method="post">
-    <h4>Start new search:</h4>
+    <h1>Start new search:</h1>
     {{form.hidden_tag()}}
 
     {% for field in form if field.widget.input_type != 'hidden' %}
         {% if field.label.text == "Major:" %}
+            <h3>Step 1: Select school and major</h3>
             <div class="mb-3">
                 {{field.label(class_="col-1 form-label")}}
                 <div class="col-8">
@@ -34,9 +35,6 @@
                 </div>
     
             </div>
-
-            
-
             <p>
                 {% for error in field.errors %}
                     {{error}}
@@ -65,6 +63,8 @@
 
         
         {% elif field.label.text == 'State:' %}
+            <h3>Step 2: Confirm state of selected school</h3>
+
             <div class="mb-3">
                 {{field.label(class_="col-1 form-label")}}
                 <div class="col-2">

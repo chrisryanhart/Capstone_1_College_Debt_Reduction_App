@@ -14,17 +14,15 @@ import os
 from models import HouseholdIncome, ProgramFinance, TuitionType, db, connect_db, User, School, Major, State, SchoolMajor
 from forms import SearchForm, AddUserForm, LoginForm, EditUserForm
 from secret import API_key
-from all_majors_seed import unique_major_titles
+from utilities import *
 
 CURR_USER_KEY = "curr_user"
 
-# https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/NaPali_overlook_Kalalau_Valley.jpg/1024px-NaPali_overlook_Kalalau_Valley.jpg
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
-# Get DB_URI from environ variable (useful for production/testing) or,
-# if not set there, use development local db.
+
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ.get('DATABASE_URL', 'postgresql:///college_app'))
 
@@ -40,7 +38,6 @@ connect_db(app)
 @app.route('/')
 def show_home_page():
 
-    # if user logged in show homepage
 
     if 'user_id' in session:
 
@@ -54,8 +51,6 @@ def show_home_page():
         data = retrieve_program_finances(program_finances)
 
         return render_template('savedQueries.html', user=user, data=data)
-
-
 
     return render_template('welcome.html')
 
@@ -212,15 +207,19 @@ def search_schools_majors():
 
     if form.validate_on_submit():
         form_status = True
-
-        school1_name = request.form['school1']
+        
+        # extract form data
+        school_name = request.form['school1']
         school_state = request.form['school_state']
         major_title = request.form['major1']
-        major_inst = Major.query.filter_by(title=major_title).first()
 
+        # get instances of model classes
+        major_inst = Major.query.filter_by(title=major_title).first()
         state_inst = State.query.filter_by(name=school_state).first()
-        school_inst = School.query.filter_by(name=school1_name,state_id=state_inst.id).first()
+        school_state = state_inst.name
+        school_inst = School.query.filter_by(name=school_name,state_id=state_inst.id).first()
         
+        # verify schools and majors exist with the selected criteria
         if school_inst == None:
             form_status = False
             form.school_state.errors = ['School is not located in the state selected. Select state from dropdown list.']
@@ -235,125 +234,29 @@ def search_schools_majors():
 
         user = User.query.filter_by(id=session['user_id']).first()
 
+        # Retrieve and define search data
         home_state = user.states.name
-    
-        data['state'] = user.states.name
-
         household_income = user.household_incomes.household_income
-        data['household_income'] = household_income
-
-        # Extract state of the school from form input 
-        school_state = request.form['school_state']
-        school_state_inst = State.query.filter_by(name=school_state).first()
-        school_state_id = school_state_inst.id
-        data['school_state'] = school_state
-
-        school1_name = request.form['school1']
-        data['school'] = school1_name
-
-
-        school1 = School.query.filter_by(name=school1_name,state_id=school_state_id).first()
-
-
-        payload = {"id": f"{school1.id}","school.state": f"{school_state}", "_fields": "id,school.name,latest.cost,latest.school.ownership,latest.school.state", "api_key": f"{API_key}"}
-
-
-        cost_resp = requests.get(f'https://api.data.gov/ed/collegescorecard/v1/schools.json', params=payload)
-
-        cost_data = cost_resp.json()
-
-        ownership = cost_data['results'][0]['latest.school.ownership']
-
-        # verify tuition is out of state and public
-        if home_state != school_state and ownership == 1:
-            out_of_state_tuition = cost_data['results'][0]['latest.cost.tuition.out_of_state']
-            books = cost_data['results'][0]['latest.cost.booksupply']
-            roomboard = cost_data['results'][0]['latest.cost.roomboard.oncampus']
-            misc_expense = cost_data['results'][0]['latest.cost.otherexpense.oncampus']
-            
-            total_out_of_state_cost = out_of_state_tuition + roomboard + books + misc_expense
-
-            if not total_out_of_state_cost or total_out_of_state_cost < 0:
-                total_out_of_state_cost = 'No data'
-            else:
-                total_out_of_state_cost = "${:0,}".format(total_out_of_state_cost) 
-
-            data['tuition'] = total_out_of_state_cost
-            data['tuition_type'] = 'Out-of-state'
-       
-        # Verify school is private (not public)
-        if ownership != 1:
-            private_net_cost = cost_data['results'][0][f'latest.cost.net_price.private.by_income_level.{household_income}']
-
-            if not private_net_cost or private_net_cost < 0:
-                private_net_cost = 'No data'
-            else:
-                private_net_cost = "${:0,}".format(private_net_cost) 
-
-
-            data['tuition'] = private_net_cost
-            data['tuition_type'] = 'Private'
-        
-        # Check if school is considered in-state
-        if home_state == school_state and ownership == 1:
-            net_in_state_public_cost = cost_data['results'][0][f'latest.cost.net_price.public.by_income_level.{household_income}']
-            
-            if not net_in_state_public_cost or net_in_state_public_cost < 0:
-                net_in_state_public_cost = 'No data'
-            else:
-                net_in_state_public_cost = "${:0,}".format(net_in_state_public_cost) 
-            
-            data['tuition'] = net_in_state_public_cost
-            data['tuition_type'] = 'In-state'
-
-
         major_name = request.form['major1']
-        data['major'] = major_name
-
+        degree_id = 3
+        degree_name = 'Bachelors Degree'
+        
         major = Major.query.filter_by(title=major_name).first()
 
-        # make degree dynamic with user input
-        degree = 3
-        degree_name = 'Bachelors Degree'
+        # store results to data
         data['degree'] = degree_name
-        data['degree_id'] = 3
-
-        major_params = {
-            'id':f'{school1.id}','latest.programs.cip_4_digit.credential.level':f"{degree}", 'latest.programs.cip_4_digit.code':f"{major.id}", 
-            '_fields':'id,school.name,latest.programs.cip_4_digit.earnings.highest.1_yr.overall_median_earnings,latest.programs.cip_4_digit.earnings.highest.2_yr.overall_median_earnings,latest.programs.cip_4_digit.earnings.highest.3_yr.overall_median_earnings',
-            "api_key": f"{API_key}"
-            }
-
-        earnings_resp = requests.get(f'https://api.data.gov/ed/collegescorecard/v1/schools.json', major_params)
-        earnings_data = earnings_resp.json()
-
-
-        yr_1_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['1_yr']['overall_median_earnings']
-        yr_2_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['2_yr']['overall_median_earnings']
-        yr_3_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['3_yr']['overall_median_earnings']
-
-        # Process external API data
-        if not yr_1_earnings or yr_1_earnings < 0:
-            yr_1_earnings = 'No data'
-        else:
-            yr_1_earnings = "${:0,}".format(yr_1_earnings) 
-
-        if not yr_2_earnings or yr_2_earnings < 0:
-            yr_2_earnings = 'No data'
-        else:
-            yr_2_earnings = "${:0,}".format(yr_2_earnings) 
-
-        if not yr_3_earnings or yr_3_earnings < 0:
-            yr_3_earnings = 'No data'
-        else:
-            yr_3_earnings = "${:0,}".format(yr_3_earnings) 
-
-        data['yr_1_earnings'] = yr_1_earnings
-        data['yr_2_earnings'] = yr_2_earnings
-        data['yr_3_earnings'] = yr_3_earnings
+        data['degree_id'] = degree_id
+        data['major'] = major_name
+        # 
+        data['state'] = home_state     
+        # 
+        data['household_income'] = household_income
+        data['school_state'] = school_state
+        data['school'] = school_inst.name
         
+        resp = call_college_API(school_inst.id,major.id,school_state,household_income,home_state,degree_id,data)
 
-        return render_template('results.html',data=data, form=form)
+        return render_template('results.html',data=resp, form=form)
 
     # Provide lists for dynamic datalist options
     schools = School.query.order_by(School.name).all()
@@ -361,40 +264,6 @@ def search_schools_majors():
     states = State.query.all()
 
     return render_template('/search.html',form=form,schools=schools,majors=majors, states=states)
-
-
-def retrieve_program_finances(program_finances):
-    data = []
-
-    for program_finance in program_finances:
-        program_finance_data = {}
-        
-        program_finance_data['school_name'] = program_finance.schools.name
-        program_finance_data['major_name'] = program_finance.majors.title
-        program_finance_data['credential_title'] = 'Bachelors Degree'
-        program_finance_data['school_state'] = program_finance.schools.states.name
-     
-        # program_finance_inst = ProgramFinance.query.get(query.program_finance_id)
-
-        program_finance_data['yr_1_earnings'] = program_finance.year_1_income
-        program_finance_data['yr_2_earnings'] = program_finance.year_2_income
-        program_finance_data['yr_3_earnings'] = program_finance.year_3_income
-        program_finance_data['cost'] = program_finance.cost
-        program_finance_data['tuition_type'] = program_finance.tuition_types.tuition_type
-        
-        # as I loop through, I can retrieve the names to add the results screen
-        # school_id = query.school_id
-        # major_id = query.major_id
-        # credential_id = query.credential_id
-        # state = query.states.name
-        # household_income = query.household_incomes.household_income
-
-        # resp = call_college_API(school_id,major_id,credential_id,state,household_income)
-
-       
-        data.append(program_finance_data)
-
-    return data
 
 
 @app.route('/API/saveSearch',methods=['POST'])
@@ -414,10 +283,6 @@ def save_search_result():
             # extract data from JS AJAX request
             school_name = data['school']
             major_title = data['major']
-            degree_title = data['degree']
-            household_income_range = data['household_income']
-            home_state_name = data['home_state']
-
             school_state = data['school_state']
             cost = data['cost']
             income_yr1 = data['income_yr1']
@@ -425,19 +290,15 @@ def save_search_result():
             income_yr3 = data['income_yr3']
             tuition_type = data['tuition_type']
 
+            # Create instances from form data 
             tuition_type_inst = TuitionType.query.filter_by(tuition_type=tuition_type).first()
-
             state_inst = State.query.filter_by(name=school_state).first()
-            school_state_id = state_inst.id
-
-            school_inst = School.query.filter_by(name=school_name,state_id=school_state_id).first()
-            school_id = school_inst.id
-
+            school_inst = School.query.filter_by(name=school_name,state_id=state_inst.id).first()
             major_inst = Major.query.filter_by(title=major_title).first()
-            major_id = major_inst.id
 
-            # create and save new program finance instance to the database
-            new_program_finance = ProgramFinance(user_id=session['user_id'], school_id=school_id, major_id=major_id, cost=cost,year_1_income=income_yr1,year_2_income=income_yr2,year_3_income=income_yr3,tuition_type_id=tuition_type_inst.id)
+            # Use above instances to create new program finance and commit to db
+            new_program_finance = ProgramFinance(user_id=session['user_id'], school_id=school_inst.id, major_id=major_inst.id, cost=cost,year_1_income=income_yr1,year_2_income=income_yr2,year_3_income=income_yr3,tuition_type_id=tuition_type_inst.id)
+
             db.session.add(new_program_finance)
             db.session.commit()
 
@@ -453,7 +314,6 @@ def save_search_result():
             
             # get program_finance_id from hidden input on the table
             program_finance_id = data['program_finance_id']
-            # user_id = session['user_id']
 
             program_finance = ProgramFinance.query.filter_by(id=program_finance_id).first()
             db.session.delete(program_finance)
@@ -466,34 +326,25 @@ def save_search_result():
 
             return jsonify(data)
 
-        return 'Error'
 
 
-
-# looks up majors in schools 
 @app.route('/API/findMajors', methods=['GET'])
 def find_majors_of_schools():
 
     if 'user_id' not in session:
         flash('No user logged in')
         return redirect('/')
+    
+    major_list = []
+    state_list = []
 
-    # school_query = School.query
-
-    major_codes = []
-    all_majors = []
-    unique_search_majors = []
-
+    # Retrieve school input
     textbox_val = request.args['school']
 
-    school_query = School.query.filter_by(name=textbox_val).all()
-    if len(school_query) > 2:
-        return 'Too many schools'
-
+    # Reset datalist options to all majors and states when school input removed 
     if len(textbox_val) == 0:
-        # query all major titles directly
-        major_list = []
 
+        # Gather all major titles for datalist options
         all_majors = Major.query.all()
 
         for major in all_majors:
@@ -501,44 +352,41 @@ def find_majors_of_schools():
 
         major_list.sort()
 
-        state_list = []
+        # Gather all state names for datalist options
         all_states = State.query.all()
-        
         for state in all_states:
             state_list.append(state.name)
         
         state_list.sort()
 
+        # Send data to update DOM 
         data = {
             'type': 'all_majors',
             'major_list': major_list,
             'state_list': state_list
         }
         return jsonify(data)
+    
+        # Update major list if number of schools from the db query is less than 2 or no match
+    school_query = School.query.filter_by(name=textbox_val).all()
+    if len(school_query) > 2 or len(school_query)==0:
+        return 'No update required'
 
     else:
 
-        formated_text = textbox_val
-
-        if textbox_val[0].islower():
-            formated_text = textbox_val.capitalize()
-
-        name = "%{}%".format(formated_text)
-        school_list = School.query.filter(School.name.like(name)).all()
-
-    if len(school_list) <= 3 and len(school_list) > 0:
-
-        state_list = []
-        for school in school_list:
+        for school in school_query:
             state_list.append(school.states.name)
             for major in school.majors:
-                all_majors.append(major.title)
-
+                major_list.append(major.title)
+        
+        # Remove duplicates
         unique_states = list(set(state_list))
-        unique_search_majors = list(set(all_majors))
+        unique_search_majors = list(set(major_list))
+        
         unique_search_majors.sort()
         unique_states.sort()
 
+        # Send data to front-end for DOM update
         data = {
             'type': 'select',
             'major_list': unique_search_majors,
@@ -546,36 +394,31 @@ def find_majors_of_schools():
             }
 
         return jsonify(data)
-    else:
-        return 'Invalid school name'
     
-
-
 
 @app.route('/API/findSchools', methods=['GET'])
 def find_schools_of_a_major():
     if 'user_id' not in session:
         flash('No user logged in')
         return redirect('/')
-
-    all_schools = []
+    state_list = []
     school_list = []
-    school_ids = []
     unique_school_names = []
 
+    # Retrieve major input from form
     textbox_val = request.args['major']
 
+    # If input field reset, update datalist options with all school names and states
     if len(textbox_val) == 0:
         all_schools = School.query.all()
 
         for school in all_schools:
             school_list.append(school.name)
-
-        school_list.sort()
-
-        state_list = []
-        all_states = State.query.all()
         
+        unique_school_names = list(set(school_list))
+        unique_school_names.sort()
+
+        all_states = State.query.all()
         for state in all_states:
             state_list.append(state.name)
         
@@ -588,17 +431,16 @@ def find_schools_of_a_major():
         }
 
         return jsonify(data)
-
-
     
     name = "%{}%".format(textbox_val)
     major_list = Major.query.filter(Major.title.like(name)).all()
 
-    if len(major_list) > 2:
-        return 'Too many majors'
+    # if major list not small enough, don't update schools
+    if len(major_list) > 2 or len(major_list)==0:
+        return 'No update required'
 
     else:
-        state_list = []
+        # update schools with the available major
         for major in major_list:
             for school in major.schools:
                 school_list.append(school.name)
@@ -617,148 +459,5 @@ def find_schools_of_a_major():
             }
 
         return jsonify(data)
-
-# @app.route('/API/processStateInput',methods=['GET'])
-# def process_state_input():
-#     # process school and major
-
-#     if 'user_id' not in session:
-#         # flash message
-#         return redirect('/')
-
-#     # state_input = State.query.
-
-#     all_states = []
-#     state_list = []
-#     school_list = []
-#     school_ids = []
-#     unique_school_names = []
-
-#     textbox_val = request.args['school']
-
-#     if len(textbox_val) == 0:
-#         # update all majors/schools
-#         all_states = State.query.all()
-
-#         for state in all_states:
-#             state_list.append(state.name)
-
-#         state_list.sort()
-
-#         # state_list = []
-#         # all_states = State.query.all()
-        
-#         for state in all_states:
-#             state_list.append(state.name)
-        
-#         state_list.sort()
-
-#         data = {
-#             'type': 'all_schools',
-#             'school_list': school_list,
-#             'state_list': state_list
-#         }
-
-#         return jsonify(data)
-
-
-    
-#     name = "%{}%".format(textbox_val)
-#     major_list = Major.query.filter(Major.title.like(name)).all()
-
-#     if len(major_list) > 2:
-#         return 'Too many majors'
-
-#     else:
-#         state_list = []
-#         for major in major_list:
-#             for school in major.schools:
-#                 school_list.append(school.name)
-#                 state_list.append(school.states.name)
-#                 # if school.schools.id not in school_ids:
-#                 #     # don't want duplicates
-#                 #     school_list.append(school.schools.name)
-#                 #     school_ids.append(school.schools.id)
-
-
-
-#         unique_school_names = list(set(school_list))
-#         unique_state_names = list(set(state_list))
-        
-#         unique_school_names.sort()
-#         unique_state_names.sort()
-
-#         data = {
-#             'type': 'selected',
-#             'school_list': unique_school_names,
-#             'state_list': unique_state_names
-#             }
-
-#         test = 1
-
-#         return jsonify(data)
-
-#     return
-
-def call_college_API(school_id,major_id,credential_id,state,household_income):
-        data = {}
-
-        payload = {"id": f"{school_id}", "_fields": "id,school.name,latest.cost,latest.school.ownership,latest.school.state", "api_key": f"{API_key}"}
-
-        cost_resp = requests.get(f'https://api.data.gov/ed/collegescorecard/v1/schools.json', params=payload)
-
-        cost_data = cost_resp.json()
-
-        school_state = cost_data['results'][0]['latest.school.state']
-        ownership = cost_data['results'][0]['latest.school.ownership']
-
-        # verify tuition is out of state and public
-        if state != school_state and ownership == 1:
-            out_of_state_tuition = cost_data['results'][0]['latest.cost.tuition.out_of_state']
-            books = cost_data['results'][0]['latest.cost.booksupply']
-            roomboard = cost_data['results'][0]['latest.cost.roomboard.oncampus']
-            misc_expense = cost_data['results'][0]['latest.cost.otherexpense.oncampus']
-            
-            total_out_of_state_cost = out_of_state_tuition + roomboard + books + misc_expense
-
-            data['tuition'] = total_out_of_state_cost
-            data['tuition_type'] = 'Out-of-state'
-
-       
-        # Verify school is private (not public)
-        if ownership != 1:
-            private_net_cost = cost_data['results'][0][f'latest.cost.net_price.private.by_income_level.{household_income}']
-            data['tuition'] = private_net_cost
-            data['tuition_type'] = 'Private'
-
-        if state == school_state and ownership == 1:
-            net_in_state_public_cost = cost_data['results'][0][f'latest.cost.net_price.public.by_income_level.{household_income}']
-            data['tuition'] = net_in_state_public_cost
-            data['tuition_type'] = 'In-state'
-
-        # may have to revise given that there could be multiple requests per search
-
-
-        major_params = {
-            'id':f'{school_id}','latest.programs.cip_4_digit.credential.level':f"{credential_id}", 'latest.programs.cip_4_digit.code':major_id, 
-            '_fields':'id,school.name,latest.programs.cip_4_digit.earnings.highest.1_yr.overall_median_earnings,latest.programs.cip_4_digit.earnings.highest.2_yr.overall_median_earnings,latest.programs.cip_4_digit.earnings.highest.3_yr.overall_median_earnings',
-            "api_key": f"{API_key}"
-            }
-
-        earnings_resp = requests.get(f'https://api.data.gov/ed/collegescorecard/v1/schools.json', major_params)
-
-        earnings_data = earnings_resp.json()
-
-        # if results don't exist, exit function and flash message
-        yr_1_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['1_yr']['overall_median_earnings']
-        yr_2_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['2_yr']['overall_median_earnings']
-        yr_3_earnings = earnings_data['results'][0]['latest.programs.cip_4_digit'][0]['earnings']['highest']['3_yr']['overall_median_earnings']
-
-        data['yr_1_earnings'] = yr_1_earnings
-        data['yr_2_earnings'] = yr_2_earnings
-        data['yr_3_earnings'] = yr_3_earnings
-
-
-        return data
 
 
