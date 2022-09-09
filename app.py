@@ -260,10 +260,15 @@ def search_schools_majors():
 
     # Provide lists for dynamic datalist options
     schools = School.query.order_by(School.name).all()
+    school_list = [item.name for item in schools]
+
+    unique_school_list = list(set(school_list))
+    unique_school_list.sort()
+
     majors = Major.query.order_by(Major.title).all()
     states = State.query.all()
 
-    return render_template('/search.html',form=form,schools=schools,majors=majors, states=states)
+    return render_template('/search.html',form=form,schools=unique_school_list,majors=majors, states=states)
 
 
 @app.route('/API/saveSearch',methods=['POST'])

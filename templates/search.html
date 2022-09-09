@@ -49,8 +49,8 @@
                     {{field(list=field.name + "-list",class_="form-control")}}
     
                     <datalist id="{{field.name}}-list">
-                        {% for school in schools %}
-                            <option value="{{school.name}}">
+                        {% for name in schools %}
+                            <option value="{{name}}">
                         {% endfor %}
                     </datalist>
                 </div>
