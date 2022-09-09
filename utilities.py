@@ -95,13 +95,12 @@ def retrieve_program_finances(program_finances):
     for program_finance in program_finances:
         program_finance_data = {}
         
+        program_finance_data['program_finance_id'] = program_finance.id
         program_finance_data['school_name'] = program_finance.schools.name
         program_finance_data['major_name'] = program_finance.majors.title
         program_finance_data['credential_title'] = 'Bachelors Degree'
         program_finance_data['school_state'] = program_finance.schools.states.name
      
-        # program_finance_inst = ProgramFinance.query.get(query.program_finance_id)
-
         program_finance_data['yr_1_earnings'] = program_finance.year_1_income
         program_finance_data['yr_2_earnings'] = program_finance.year_2_income
         program_finance_data['yr_3_earnings'] = program_finance.year_3_income

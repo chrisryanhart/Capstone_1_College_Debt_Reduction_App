@@ -71,13 +71,15 @@ async function saveSearch(e){
     const data = resp.data;
 
     if (data.status === 'Program finance added to database'){
-      $tr = $searchSaveStatus.closest('tr');
-
+      // $tr = $searchSaveStatus.closest('tr');
       // $savedQueryInput = `<input id="savedQuery" type="hidden" value="${data.saved_query_id}">`;
       $programFinanceInput = `<input id="program-finance" type="hidden" value="${data.program_finance_id}">`;
       
+      $('#program_finance_id_placeholder').append($programFinanceInput)
+
+
       // $tr.append($savedQueryInput);
-      $tr.append($programFinanceInput);
+      // $tr.append($programFinanceInput);
     } 
     else if (data.status === 'Program finance deleted from database'){
       // select input id
