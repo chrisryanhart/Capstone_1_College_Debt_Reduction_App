@@ -148,7 +148,6 @@ async function updateSchoolList(e){
 
     });
 
-    // what about error?
     const data = resp.data
     
     if (data === 'No update required'){
@@ -213,6 +212,4 @@ function hideLoader(){
   $loaderContainers.hide();
 };
 
-// $stateInput.on('keyup',processStateInput)
 
-// $majorInput.on('click', updateMajorList);

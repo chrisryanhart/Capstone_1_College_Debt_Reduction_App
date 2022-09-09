@@ -191,7 +191,7 @@ class CollegeAppViewsTestCase(TestCase):
             html = resp.get_data(as_text=True)
 
             self.assertIn('user_id',session)
-            self.assertIn('<p>Saved Search Summary:</p>',html)
+            self.assertIn('<h4>Saved Search Summary:</h4>',html)
             self.assertEqual(resp.status_code,200)
 
     def test_edit_user_profile(self):
