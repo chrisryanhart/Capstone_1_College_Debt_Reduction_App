@@ -417,7 +417,7 @@ def find_schools_of_a_major():
     # if school already been selected, don't update schools
     school_query = School.query.filter_by(name=school_input).all()
 
-    if len(school_query) == 1 or len(school_query):
+    if len(school_query) == 1 or len(school_query) == 2:
         return 'No update required'
 
     # If input field reset, update datalist options with all school names and states
