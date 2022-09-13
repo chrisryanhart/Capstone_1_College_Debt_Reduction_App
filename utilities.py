@@ -1,6 +1,6 @@
 from app import *
 
-def call_college_API(school_id,major_id,school_state,household_income,home_state,degree_id,data):
+def call_college_API(school_id,major_id,school_state,household_income,home_state,degree_id,data,API_key):
 
     payload = {"id": f"{school_id}","school.state": f"{school_state}", "_fields": "id,school.name,latest.cost,latest.school.ownership,latest.school.state", "api_key": f"{API_key}"}
 

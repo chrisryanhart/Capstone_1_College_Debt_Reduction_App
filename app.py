@@ -18,23 +18,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
-
-CURR_USER_KEY = "curr_user"
-
-
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
 API_key = os.getenv('API_key')
-
-print('***************')
-print('***************')
-print(API_key)
-print(type(API_key))
-print('***************')
-print('***************')
-
 
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ.get('DATABASE_URL', 'postgresql:///college_app'))
@@ -267,7 +254,7 @@ def search_schools_majors():
         data['school_state'] = school_state
         data['school'] = school_inst.name
         
-        resp = call_college_API(school_inst.id,major.id,school_state,household_income,home_state,degree_id,data)
+        resp = call_college_API(school_inst.id,major.id,school_state,household_income,home_state,degree_id,data,API_key)
 
         return render_template('results.html',data=resp, form=form)
 

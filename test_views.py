@@ -16,7 +16,8 @@ from models import SchoolMajor, db, connect_db, HouseholdIncome, ProgramFinance,
 os.environ['DATABASE_URL'] = "postgresql:///college_app-test"
 
 
-from app import app, CURR_USER_KEY, bcrypt
+from app import app, bcrypt
+
 
 
 db.create_all()
@@ -141,10 +142,6 @@ class CollegeAppViewsTestCase(TestCase):
     def test_user_signup(self):
         """Ensure user can signup"""
         with self.client as c:
-            # with c.session_transaction() as sess:
-            #     # sess[CURR_USER_KEY] = self.testuser_id
-            #     test=1
-            # username, password, home_state_id, household_income_id
             resp = c.post('/signup', 
                 data={
                 'username':'superman',
