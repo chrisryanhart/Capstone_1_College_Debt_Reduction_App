@@ -13,7 +13,6 @@ import os
 
 from models import HouseholdIncome, ProgramFinance, TuitionType, db, connect_db, User, School, Major, State, SchoolMajor
 from forms import SearchForm, AddUserForm, LoginForm, EditUserForm
-# from secret import API_key
 from utilities import *
 from dotenv import load_dotenv
 
@@ -27,11 +26,12 @@ CURR_USER_KEY = "curr_user"
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
-test_key = os.getenv('test')
+API_key = os.getenv('API_key')
 
 print('***************')
 print('***************')
-print(test_key)
+print(API_key)
+print(type(API_key))
 print('***************')
 print('***************')
 
