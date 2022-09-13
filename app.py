@@ -15,12 +15,23 @@ from models import HouseholdIncome, ProgramFinance, TuitionType, db, connect_db,
 from forms import SearchForm, AddUserForm, LoginForm, EditUserForm
 from secret import API_key
 from utilities import *
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 
 CURR_USER_KEY = "curr_user"
 
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
+
+# test_key = os.getenv('tsaf')
+
+app.config['TEST_KEY'] = os.environ.get('test')
+
+# print(TEST_KEY)
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = (

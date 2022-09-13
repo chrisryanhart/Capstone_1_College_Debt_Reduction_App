@@ -3,3 +3,4 @@
 secret.py
 .vscode
 .DS_Store
+.env
