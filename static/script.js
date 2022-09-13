@@ -46,7 +46,8 @@ async function saveSearch(e){
     // query id can only be assigned after the search is saved
     let resp = await axios({
         method: 'post',
-        url: 'http://localhost:5000/API/saveSearch',
+
+        url: `${window.location.origin}/API/saveSearch`,
         data: {
           school: $school,
           major: $major,
@@ -102,7 +103,7 @@ async function updateMajorList(e){
   if ($schoolInput.val().length === 0 || $schoolInput.val().length > 10){
     let resp = await axios({
       method: 'get',
-      url: 'http://localhost:5000/API/findMajors',
+      url: `${window.location.origin}/API/findMajors`,
       params: {
         school: `${$schoolInput.val()}`,
       }
@@ -143,7 +144,7 @@ async function updateSchoolList(e){
   if ($majorInput.val().length === 0 || $majorInput.val().length > 4){
     let resp = await axios({
       method: 'get',
-      url: 'http://localhost:5000/API/findSchools',
+      url: `${window.location.origin}/API/findSchools`,
       params: {
         major: `${$majorInput.val()}`,
       }
