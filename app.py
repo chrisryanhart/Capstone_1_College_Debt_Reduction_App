@@ -412,6 +412,13 @@ def find_schools_of_a_major():
 
     # Retrieve major input from form
     textbox_val = request.args['major']
+    school_input = request.args['school']
+
+    # if school already been selected, don't update schools
+    school_query = School.query.filter_by(name=school_input).all()
+
+    if len(school_query) == 1 or len(school_query):
+        return 'No update required'
 
     # If input field reset, update datalist options with all school names and states
     if len(textbox_val) == 0:
@@ -431,7 +438,7 @@ def find_schools_of_a_major():
 
         data = {
             'type': 'all_schools',
-            'school_list': school_list,
+            'school_list': unique_school_names,
             'state_list': state_list
         }
 

@@ -147,6 +147,7 @@ async function updateSchoolList(e){
       url: `${window.location.origin}/API/findSchools`,
       params: {
         major: `${$majorInput.val()}`,
+        school: `${$schoolInput.val()}`
       }
 
     });
