@@ -27,11 +27,13 @@ CURR_USER_KEY = "curr_user"
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
-# test_key = os.getenv('tsaf')
+test_key = os.getenv('test')
 
-app.config['TEST_KEY'] = os.environ.get('test')
-
-# print(TEST_KEY)
+print('***************')
+print('***************')
+print(test_key)
+print('***************')
+print('***************')
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = (
