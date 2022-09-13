@@ -21,16 +21,21 @@ load_dotenv()
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
+# app.run(debug = False)
+
+# app.config['DEBUG_TB_ENABLED'] = False
+
 API_key = os.getenv('API_key')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ.get('DATABASE_URL', 'postgresql:///college_app'))
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
+
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
-toolbar = DebugToolbarExtension(app)
+# toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
