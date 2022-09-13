@@ -13,7 +13,7 @@ import os
 
 from models import HouseholdIncome, ProgramFinance, TuitionType, db, connect_db, User, School, Major, State, SchoolMajor
 from forms import SearchForm, AddUserForm, LoginForm, EditUserForm
-from secret import API_key
+# from secret import API_key
 from utilities import *
 from dotenv import load_dotenv
 
