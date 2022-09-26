@@ -4,6 +4,11 @@
 
 The College Value App helps prospective students find colleges and 4 year degrees with the highest value.  Total college cost and expected major post-graduation income are provided based on the school, major, household income, and the state of residency.  Users can compare different degree and university value combinations by saving the searches to their homepage.  Users can identify and select the higest value based on their career interests.    
 
+ - **Database Schema Model:**
+ ![db schema model](db_schema.png?raw=true  "College Value App DB Schema")
+ - **Application Architecture:**
+  ![db schema model](App_Architecture.png?raw=true  "College Value App DB Schema")
+
 **URL Link:** https://college-value-app.herokuapp.com/
 
 **API Registration:** https://collegescorecard.ed.gov/data/documentation/
@@ -32,6 +37,7 @@ The College Value App helps prospective students find colleges and 4 year degree
  * Users can compare all school values on a single page
 
 
+
 **Step-by-step User guide:**
 
 1. Sign in or create a user profile that specifies household income and the state of residency
@@ -47,8 +53,9 @@ The College Value App helps prospective students find colleges and 4 year degree
 
 **Technology Stack Used:**
 
-* Python Flask used for backend
-* Javascript and jQuery used on frontend
+* Python-Flask was used for backend
+* Javascript, CSS, HTML, jQuery were used on frontend
+* Postgres was used as the database
 
 Addition Technologies used
 

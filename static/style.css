@@ -1,3 +1,23 @@
+#signup-description {
+    display: block;
+    position: relative;
+    min-height: 125px;
+}
+
+#data-notes {
+    display: block;
+    position: relative;
+    min-height: 225px;
+}
+
+#data-content{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    font-size: small;
+    white-space: nowrap;
+}
+
 #loader-container {
 
     margin-top: 50px;
