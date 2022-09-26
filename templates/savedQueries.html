@@ -65,9 +65,30 @@
             </tbody>
 
         </table>
-        
+
     </div>
 {% endif %}
+
+<div id="data-notes">
+    <ul id="data-content">
+        <h5>Notes about this data:</h5>
+        <li>"No data" appears when there is insufficient data for an estimation (sample size < 30 data points)</li>
+        <li>Cost and income data is sourced only from students that received federal government student loans</li>
+        <li>For in-state public and all private schools, the total net annual cost is displayed</li>
+            <ul>
+                <li>University and goverment scholarships are subtracted from tuition </li>
+                <li>Room & board, books & supplies, and any additional fees are included</li>
+            </ul>
+        <li>For out-of-state public schools, the maximum potential cost is displayed
+            <ul>
+                <li>Tuition, Room & board, books & supplies, and any additional fees are included</li>
+                <li>Reduced costs may be possible but could not be provided by the College Scorecard API</li>
+                <li>Consult directly with the college's website to confirm if a cost reduction is possible</li>
+            </ul>
+        </li>
+        <li>Source: https://collegescorecard.ed.gov/data/documentation/</li>
+    </ul>
+</div>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -79,21 +100,6 @@
   {% endif %}
 {% endwith %}
 
-<div id="data-notes">
-    <ul id="data-content">
-        <h5>Notes about this data:</h5>
-        <li>Source: https://collegescorecard.ed.gov/data/documentation/</li>
-        <li>"No data" appears when there is insufficient data for an estimation (sample size < 30 data points)</li>
-        <li>Cost and income data is sourced only from students that received federal government student loans</li>
-        <li>The annual cost includes room & board, books & supplies, and any additional fees</li>
-        <li>For in-state public and all private schools, the total net cost is displayed</li>
-        <li>For out-of-state public schools, the maximum potential cost is displayed
-            <ul>
-                <li>Reduced costs may be possible but could not be provided by the College Scorecard API</li>
-                <li>Consult directly with the college's website to confirm if a cost reduction is possible</li>
-            </ul>
-        </li>
-    </ul>
-</div>
+
 
 {% endblock %}

@@ -1,21 +1,27 @@
 #signup-description {
     display: block;
+    margin-top: 30px;
     position: relative;
-    min-height: 125px;
+    min-height: 200px;
 }
+
+
 
 #data-notes {
     display: block;
     position: relative;
     min-height: 225px;
+    word-wrap: break-word;
+    max-width: 100vw;
+    margin-top: 20px;
 }
 
 #data-content{
     position: absolute;
-    bottom: 0;
+    top: 0;
     left: 0;
     font-size: small;
-    white-space: nowrap;
+    max-width: 100vw;
 }
 
 #loader-container {
@@ -136,7 +142,6 @@ table#API-results {
 label.save-search{
     width: 10px;
 }
-
 
 table#saved-results {
     width: 1440px;
