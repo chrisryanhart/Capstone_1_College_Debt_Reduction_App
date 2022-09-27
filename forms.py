@@ -13,11 +13,8 @@ incomes = [("0-30000","0-$30k"),("30001-48000","$30k-$48k"),("48001-75000","$48k
 
 class SearchForm(FlaskForm):
     major1 = StringField('Major:', validators=[InputRequired(),AnyOf(unique_major_titles,message='Invalid Major. Must select input from dropdown list.')])
-    # major1 = SelectField('Select Major: ',coerce=int)
     school1 = StringField('College:', validators=[InputRequired(),AnyOf(unique_school_list, message='Invalid school name. Must select input from dropdown list')])
     school_state = StringField('State:', validators=[InputRequired(),AnyOf(states,message='Invalid state format. Select state from dropdown list')])
-    # household_income = SelectField('Household Income:', choices=incomes, validators=[DataRequired()])
-    # household_income = StringField('Household Income', va)
 
 
 class AddUserForm(FlaskForm):

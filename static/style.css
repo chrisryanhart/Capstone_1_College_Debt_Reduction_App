@@ -136,6 +136,8 @@ textarea {
 }
 
 table#API-results {
+    margin-left: 10px;
+    margin-right: auto;
     width: 1440px;
 }
 
@@ -144,6 +146,8 @@ label.save-search{
 }
 
 table#saved-results {
+    margin-left: 10px;
+    margin-right: auto;
     width: 1440px;
 }
 .state-width { 

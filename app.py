@@ -65,11 +65,25 @@ def show_home_page():
 def create_new_user():
 
     form = AddUserForm()
-    
+
+    form_status = False
+
+    # Verify username not already taken
     if form.validate_on_submit():
+        form_status = True
+        
+        new_username = request.form['username']
+
+        preexisting_user= User.query.filter_by(username=new_username).first()
+        
+        if preexisting_user != None:
+            form_status = False
+            form.username.errors = ['Username already taken!']
+        
+    
+    if form_status:
 
         username = request.form['username']
-
         password = request.form['password']
 
         # use bcrypt to store encrypted password
